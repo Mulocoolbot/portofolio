@@ -9,8 +9,8 @@ interface ParticleFieldProps {
 }
 
 export const ParticleField: React.FC<ParticleFieldProps> = ({
-  count = 1200,
-  color = '#00f2fe',
+  count = 800,
+  color = '#27272a',
   speed = 0.3
 }) => {
   const pointsRef = useRef<THREE.Points>(null);
@@ -22,18 +22,18 @@ export const ParticleField: React.FC<ParticleFieldProps> = ({
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
-      pos[i3] = (Math.random() - 0.5) * 25;
-      pos[i3 + 1] = (Math.random() - 0.5) * 25;
-      pos[i3 + 2] = (Math.random() - 0.5) * 20;
-      sc[i] = Math.random() * 0.8 + 0.2;
+      pos[i3] = (Math.random() - 0.5) * 24;
+      pos[i3 + 1] = (Math.random() - 0.5) * 24;
+      pos[i3 + 2] = (Math.random() - 0.5) * 18;
+      sc[i] = Math.random() * 0.7 + 0.3;
     }
     return [pos, sc];
   }, [count]);
 
   useFrame((state, delta) => {
     if (!pointsRef.current) return;
-    pointsRef.current.rotation.y += delta * 0.04 * speed;
-    pointsRef.current.rotation.x += delta * 0.02 * speed;
+    pointsRef.current.rotation.y += delta * 0.03 * speed;
+    pointsRef.current.rotation.x += delta * 0.015 * speed;
   });
 
   return (
@@ -53,11 +53,10 @@ export const ParticleField: React.FC<ParticleFieldProps> = ({
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.06}
+        size={0.045}
         color={color}
         transparent
-        opacity={0.65}
-        blending={THREE.AdditiveBlending}
+        opacity={0.4}
         depthWrite={false}
       />
     </points>

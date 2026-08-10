@@ -9,18 +9,22 @@ export default {
     extend: {
       colors: {
         background: {
-          DEFAULT: '#06070d',
-          card: '#0d0e1a',
-          surface: '#131427',
-          border: '#212342',
+          DEFAULT: '#ffffff',
+          card: 'rgba(255, 255, 255, 0.85)',
+          surface: '#f8fafc',
+          muted: '#f1f5f9',
+          border: '#e2e8f0',
         },
-        cyber: {
-          cyan: '#00f2fe',
-          blue: '#4facfe',
-          purple: '#8a2be2',
-          pink: '#f72585',
-          emerald: '#10b981',
-          gold: '#fbbf24',
+        mono: {
+          black: '#09090b',
+          dark: '#18181b',
+          charcoal: '#27272a',
+          gray: '#52525b',
+          muted: '#71717a',
+          light: '#a1a1aa',
+          border: '#e4e4e7',
+          subtle: '#f4f4f5',
+          white: '#ffffff',
         }
       },
       fontFamily: {
@@ -30,24 +34,19 @@ export default {
       animation: {
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'float': 'float 6s ease-in-out infinite',
-        'spin-slow': 'spin 18s linear infinite',
-        'glow-pulse': 'glowPulse 3s ease-in-out infinite alternate',
+        'spin-slow': 'spin 24s linear infinite',
       },
       keyframes: {
         float: {
           '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-12px)' },
+          '50%': { transform: 'translateY(-10px)' },
         },
-        glowPulse: {
-          '0%': { opacity: '0.4', filter: 'blur(20px)' },
-          '100%': { opacity: '0.8', filter: 'blur(35px)' },
-        }
       },
       boxShadow: {
-        'neon-cyan': '0 0 25px -5px rgba(0, 242, 254, 0.5)',
-        'neon-purple': '0 0 25px -5px rgba(138, 43, 226, 0.5)',
-        'neon-pink': '0 0 25px -5px rgba(247, 37, 133, 0.5)',
-        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.37)',
+        'glass-light': '0 8px 30px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.02)',
+        'glass-hover': '0 14px 40px rgba(0, 0, 0, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04)',
+        'subtle': '0 2px 10px rgba(0, 0, 0, 0.03)',
+        'mono-glow': '0 0 25px -5px rgba(0, 0, 0, 0.25)',
       },
       backdropBlur: {
         xs: '2px',

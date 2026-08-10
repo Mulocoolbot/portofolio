@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, Github, Sparkles, CheckCircle2 } from 'lucide-react';
+import { X, ExternalLink, Github } from 'lucide-react';
 import { Project } from '../../types';
 import { soundFX } from './SoundEffects';
 
@@ -24,16 +24,16 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
             soundFX.playClick();
             onClose();
           }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-md"
+          className="fixed inset-0 bg-neutral-900/60 backdrop-blur-sm"
         />
 
         {/* Modal Container */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          initial={{ opacity: 0, scale: 0.94, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          exit={{ opacity: 0, scale: 0.94, y: 15 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto glass-panel rounded-3xl border border-white/15 p-6 sm:p-8 shadow-2xl z-10 text-left"
+          className="relative w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-3xl border border-neutral-300 p-6 sm:p-8 shadow-2xl z-10 text-left"
         >
           {/* Close Button */}
           <button
@@ -41,46 +41,46 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
               soundFX.playClick();
               onClose();
             }}
-            className="absolute top-6 right-6 w-9 h-9 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 flex items-center justify-center text-slate-300 hover:text-white transition-colors"
+            className="absolute top-6 right-6 w-9 h-9 rounded-full bg-neutral-100 hover:bg-neutral-900 hover:text-white border border-neutral-300 flex items-center justify-center text-neutral-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
 
           {/* Project Image Banner */}
-          <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden mb-6 border border-white/10">
+          <div className="relative w-full h-64 sm:h-80 rounded-2xl overflow-hidden mb-6 border border-neutral-300">
             <img
               src={project.image}
               alt={project.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-background-card via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-white/90 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4">
-              <span className="px-3 py-1 rounded-full bg-cyber-cyan/20 border border-cyber-cyan/40 text-cyber-cyan text-xs font-mono font-medium backdrop-blur-md">
+              <span className="px-3 py-1 rounded-full bg-white border border-neutral-300 text-neutral-950 text-xs font-mono font-bold shadow-sm backdrop-blur-md">
                 {project.category.toUpperCase()}
               </span>
             </div>
           </div>
 
           {/* Title & Subtitle */}
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-white">
+          <h3 className="text-2xl sm:text-3xl font-extrabold text-neutral-950">
             {project.title}
           </h3>
-          <p className="text-sm font-mono text-cyber-cyan mt-1">
+          <p className="text-sm font-mono text-neutral-600 font-semibold mt-1">
             {project.subtitle}
           </p>
 
           {/* Description */}
-          <div className="mt-6 text-slate-300 text-sm sm:text-base leading-relaxed space-y-4">
+          <div className="mt-6 text-neutral-700 text-sm sm:text-base leading-relaxed space-y-4 font-normal">
             <p>{project.description}</p>
           </div>
 
           {/* Metrics */}
           {project.metrics && (
-            <div className="grid grid-cols-2 gap-4 mt-6 p-4 rounded-2xl bg-white/5 border border-white/5">
+            <div className="grid grid-cols-2 gap-4 mt-6 p-4 rounded-2xl bg-neutral-50 border border-neutral-300">
               {project.metrics.map((m, idx) => (
                 <div key={idx}>
-                  <span className="text-[11px] font-mono text-slate-400 block">{m.label}</span>
-                  <span className="text-base font-bold text-white font-mono mt-0.5 block">{m.value}</span>
+                  <span className="text-[11px] font-mono text-neutral-500 font-semibold block">{m.label}</span>
+                  <span className="text-base font-bold text-neutral-950 font-mono mt-0.5 block">{m.value}</span>
                 </div>
               ))}
             </div>
@@ -88,12 +88,12 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
 
           {/* Tags */}
           <div className="mt-6">
-            <h4 className="text-xs font-mono text-slate-400 mb-2.5">TECHNOLOGIES USED:</h4>
+            <h4 className="text-xs font-mono text-neutral-600 font-semibold mb-2.5">TECHNOLOGIES USED:</h4>
             <div className="flex flex-wrap gap-2">
               {project.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="px-3 py-1 rounded-lg bg-background-surface border border-background-border text-xs font-mono text-slate-300"
+                  className="px-3 py-1 rounded-lg bg-neutral-100 border border-neutral-300 text-xs font-mono text-neutral-800 font-medium"
                 >
                   #{tag}
                 </span>
@@ -102,14 +102,14 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
           </div>
 
           {/* Action Links */}
-          <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center gap-4">
+          <div className="mt-8 pt-6 border-t border-neutral-200 flex flex-wrap items-center gap-4">
             {project.demoUrl && (
               <a
                 href={project.demoUrl}
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => soundFX.playClick()}
-                className="px-6 py-3 rounded-full bg-gradient-to-r from-cyber-cyan to-cyber-blue text-black font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-neon-cyan hover:shadow-neon-cyan/80 transition-all"
+                className="px-6 py-3 rounded-full bg-neutral-900 text-white font-semibold text-xs sm:text-sm flex items-center gap-2 shadow-md hover:bg-neutral-800 transition-all"
               >
                 <span>Live Demo Preview</span>
                 <ExternalLink className="w-4 h-4" />
@@ -121,7 +121,7 @@ export const ProjectModal: React.FC<ProjectModalProps> = ({ project, onClose }) 
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => soundFX.playClick()}
-                className="px-6 py-3 rounded-full glass-panel border border-white/15 text-slate-200 hover:text-white font-medium text-xs sm:text-sm flex items-center gap-2 hover:bg-white/10 transition-all"
+                className="px-6 py-3 rounded-full bg-white border border-neutral-300 text-neutral-800 hover:text-neutral-950 font-semibold text-xs sm:text-sm flex items-center gap-2 hover:bg-neutral-100 transition-all shadow-sm"
               >
                 <Github className="w-4 h-4" />
                 <span>Source Repository</span>

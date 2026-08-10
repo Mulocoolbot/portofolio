@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Background3DCanvas } from './components/3d/Background3DCanvas';
 import { Navbar } from './components/ui/Navbar';
 import { HeroSection } from './components/ui/HeroSection';
 import { AboutBento } from './components/ui/AboutBento';
@@ -43,15 +44,18 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background text-slate-100 relative selection:bg-cyber-cyan selection:text-black">
-      {/* Custom Interactive Glow Cursor */}
+    <div className="min-h-screen bg-transparent relative font-sans text-neutral-900 selection:bg-neutral-900 selection:text-white">
+      {/* Full-Page Interactive 3D Background with scaled-down sleek objects */}
+      <Background3DCanvas />
+
+      {/* Custom Interactive Monochrome Cursor */}
       <CustomCursor />
 
-      {/* Floating Modern Navbar */}
+      {/* Floating Modern Frosted Navbar */}
       <Navbar activeSection={activeSection} onNavigate={handleNavigate} />
 
-      {/* Main Content Sections */}
-      <main className="relative z-10">
+      {/* Main Content (Un-isolated stacking context for global blend-mode) */}
+      <main>
         <HeroSection onNavigate={handleNavigate} />
         <AboutBento />
         <ProjectsSection />
@@ -59,7 +63,7 @@ export const App: React.FC = () => {
         <ContactSection />
       </main>
 
-      {/* Global Footer */}
+      {/* Global Clean Footer */}
       <Footer />
     </div>
   );

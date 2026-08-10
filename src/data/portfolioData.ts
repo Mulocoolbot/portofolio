@@ -68,11 +68,11 @@ export const projectsData: Project[] = [
   },
   {
     id: "cyber-defi-terminal",
-    title: "Cyberpunk Terminal UI",
+    title: "Minimalist Analytics UI",
     subtitle: "High-Frequency Dashboard with Holographic Charts",
-    description: "Antarmuka dashboard bertema futuristik dengan komponen modular, grafik interaktif real-time, glassmorphism ultra-halus, dan micro-interactions.",
+    description: "Antarmuka dashboard bertema monokromatik modern dengan komponen modular, grafik interaktif real-time, frosted glass ultra-halus, dan micro-interactions.",
     tags: ["React", "TypeScript", "Tailwind", "Framer Motion"],
-    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1000&q=80",
+    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=80",
     demoUrl: "#",
     githubUrl: "#",
     featured: true,
@@ -84,7 +84,7 @@ export const projectsData: Project[] = [
   },
   {
     id: "neural-sound-visualizer",
-    title: "Neural Audio Visualizer 3D",
+    title: "Spatial Audio Visualizer 3D",
     subtitle: "Generative Audio Reactive Mesh Sandbox",
     description: "Eksperimen sintetis yang merubah sinyal audio frekuensi nyata menjadi deformasi gelombang mesh 3D secara instan menggunakan Web Audio API dan Three.js.",
     tags: ["Web Audio API", "Three.js", "Canvas", "Creative Coding"],
@@ -100,7 +100,7 @@ export const projectsData: Project[] = [
   },
   {
     id: "hologram-card-engine",
-    title: "Hologram 3D Card Engine",
+    title: "Monochrome 3D Card Engine",
     subtitle: "Physically-Based Card Tilting & Shimmer Effects",
     description: "Engine kartu interaktif dengan efek pantulan cahaya spekular dinamis, depth mapping pseudo-3D, dan sensor orientasi perangkat seluler.",
     tags: ["TypeScript", "CSS 3D", "Framer Motion", "WebGL"],
@@ -119,52 +119,52 @@ export const projectsData: Project[] = [
 export const experimentPresets: ExperimentPreset[] = [
   {
     id: "icosahedron",
-    title: "Cyber Icosahedron",
-    description: "Polihedron geometris dengan material metalik dinamis, wireframe neon, dan respon gravitasi terhadap kursor.",
+    title: "Obsidian Icosahedron",
+    description: "Polihedron geometris dengan material hitam metalik halus, wireframe kontras, dan respon gravitasi terhadap kursor.",
     type: "icosahedron",
     defaultWireframe: false,
-    defaultSpeed: 1.2,
-    colorScheme: "#00f2fe",
-    tags: ["Geometry", "Metals", "Lighting"]
+    defaultSpeed: 1.0,
+    colorScheme: "#18181b",
+    tags: ["Geometry", "Obsidian", "Monochrome"]
   },
   {
     id: "torusKnot",
-    title: "Quantum Torus Knot",
-    description: "Simpul topologi kuantum dengan transisi kelengkungan kompleks dan pantulan cahaya ganda.",
+    title: "Titanium Torus Knot",
+    description: "Simpul topologi kuantum dengan transisi kelengkungan kompleks dan refleksi abu-abu titanium pekat.",
     type: "torusKnot",
     defaultWireframe: true,
-    defaultSpeed: 1.8,
-    colorScheme: "#8a2be2",
-    tags: ["Topology", "Wireframe", "Glow"]
+    defaultSpeed: 1.5,
+    colorScheme: "#52525b",
+    tags: ["Topology", "Wireframe", "Titanium"]
   },
   {
     id: "wavePlane",
-    title: "Deforming Cyber Wave",
-    description: "Permukaan bidang bergelombang (vertex wave) yang terdeformasi oleh persamaan matematika sinusoidal.",
+    title: "Charcoal Wave Plane",
+    description: "Permukaan bidang bergelombang (vertex wave) monokromatik yang terdeformasi oleh persamaan matematika sinusoidal.",
     type: "wavePlane",
     defaultWireframe: true,
-    defaultSpeed: 2.0,
-    colorScheme: "#10b981",
+    defaultSpeed: 1.8,
+    colorScheme: "#27272a",
     tags: ["Waveform", "Mathematics", "Sine"]
   },
   {
     id: "quantumCube",
     title: "Tesseract Matrix Cube",
-    description: "Struktur kubus bersarang berlapis dengan rotasi multi-aksial dan translasi interior.",
+    description: "Struktur kubus bersarang berlapis dengan rotasi multi-aksial dan translasi interior onyx hitam.",
     type: "quantumCube",
     defaultWireframe: false,
     defaultSpeed: 0.8,
-    colorScheme: "#f72585",
+    colorScheme: "#09090b",
     tags: ["Dimension", "Matrix", "Abstract"]
   },
   {
     id: "particleVortex",
-    title: "Particle Vortex Swarm",
-    description: "Ribuan partikel bercahaya yang berputar dalam pusaran gravitasi spiral.",
+    title: "Slate Vortex Swarm",
+    description: "Ribuan partikel monokromatik halus yang berputar dalam pusaran gravitasi spiral.",
     type: "particleVortex",
     defaultWireframe: false,
-    defaultSpeed: 2.5,
-    colorScheme: "#fbbf24",
+    defaultSpeed: 2.0,
+    colorScheme: "#71717a",
     tags: ["Particles", "Vortex", "Physics"]
   }
 ];

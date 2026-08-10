@@ -4,45 +4,52 @@
 
 @layer base {
   :root {
-    --color-bg: #06070d;
-    --color-cyan: #00f2fe;
-    --color-purple: #8a2be2;
-    --color-pink: #f72585;
+    --color-bg: #ffffff;
+    --color-text: #09090b;
+    --color-accent: #18181b;
   }
 
   body {
-    background-color: var(--color-bg);
-    color: #f1f5f9;
+    background-color: #ffffff;
+    color: #09090b;
     overflow-x: hidden;
     scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Custom Modern Scrollbar */
+  /* Clean Minimalist Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #06070d;
+    background: #ffffff;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #212342;
+    background: #d4d4d8;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #00f2fe;
+    background: #18181b;
   }
 }
 
 @layer utilities {
-  /* Glassmorphism Styles */
+  /* Dynamic 3D Overlap Inversion: Text appears black on white bg, and flips to bright white over dark 3D objects */
+  .blend-invert {
+    mix-blend-mode: difference;
+    color: #ffffff !important;
+  }
+
+  /* High-end White Frosted Glassmorphism */
   .glass-panel {
-    background: rgba(13, 14, 26, 0.7);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(24, 24, 27, 0.08);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
   }
 
   .glass-panel-hover {
@@ -50,37 +57,26 @@
   }
 
   .glass-panel-hover:hover {
-    background: rgba(19, 20, 39, 0.85);
-    border-color: rgba(0, 242, 254, 0.35);
-    box-shadow: 0 10px 30px -10px rgba(0, 242, 254, 0.15);
+    background: rgba(255, 255, 255, 0.92);
+    border-color: rgba(24, 24, 27, 0.2);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
   }
 
-  /* Glowing Text and Borders */
-  .text-glow-cyan {
-    text-shadow: 0 0 15px rgba(0, 242, 254, 0.6);
-  }
-
-  .text-glow-purple {
-    text-shadow: 0 0 15px rgba(138, 43, 226, 0.6);
-  }
-
-  .border-glow-cyan {
-    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3);
-  }
-
-  .bg-radial-gradient {
-    background: radial-gradient(circle at 50% 50%, rgba(138, 43, 226, 0.15) 0%, rgba(6, 7, 13, 0) 70%);
-  }
-
-  .bg-radial-cyan {
-    background: radial-gradient(circle at 50% 20%, rgba(0, 242, 254, 0.12) 0%, rgba(6, 7, 13, 0) 60%);
-  }
-
-  .grid-pattern {
-    background-size: 40px 40px;
+  /* Monochrome Subtle Patterns & Gradients */
+  .grid-pattern-light {
+    background-size: 32px 32px;
     background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+  }
+
+  .dot-pattern-light {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .bg-radial-glow {
+    background: radial-gradient(circle at 50% 40%, rgba(244, 244, 245, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
   }
 }
 
