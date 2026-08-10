@@ -27,7 +27,7 @@ export const ContactSection: React.FC = () => {
           particleCount: 80,
           spread: 70,
           origin: { y: 0.7 },
-          colors: ['#18181b', '#52525b', '#71717a', '#a1a1aa']
+          colors: ['#4fc3f7', '#80deea', '#00bcd4', '#26c6da']
         });
       } catch {
         // Confetti fallback
@@ -54,29 +54,29 @@ export const ContactSection: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         
         {/* Left Card: Info & Socials (5 cols) */}
-        <div className="lg:col-span-5 glass-panel bg-white/85 rounded-3xl p-8 flex flex-col justify-between border border-neutral-300 shadow-sm">
+        <div className="lg:col-span-5 glass-panel rounded-3xl p-8 flex flex-col justify-between">
           <div>
-            <span className="text-xs font-mono text-neutral-500 font-bold block mb-2">DIRECT CONTACT</span>
-            <h3 className="text-2xl font-bold text-neutral-950 mb-4">
+            <span className="text-xs font-mono text-white/40 font-bold block mb-2">DIRECT CONTACT</span>
+            <h3 className="text-2xl font-bold text-white mb-4">
               Terbuka untuk peluang freelance &amp; kolaborasi
             </h3>
-            <p className="text-sm text-neutral-700 leading-relaxed mb-8">
+            <p className="text-sm text-white/50 leading-relaxed mb-8">
               Saya selalu bersemangat untuk mengeksplorasi tantangan baru di bidang web grafis 3D dan produk interaktif.
             </p>
 
             <div className="space-y-4">
               <a
                 href={`mailto:${personalInfo.socials.email}`}
-                className="flex items-center gap-3 p-3.5 rounded-2xl bg-neutral-50 border border-neutral-300 hover:border-neutral-900 text-neutral-800 hover:text-neutral-950 transition-all text-xs sm:text-sm font-mono font-medium"
+                className="flex items-center gap-3 p-3.5 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-500/30 text-white/70 hover:text-white transition-all text-xs sm:text-sm font-mono font-medium"
               >
-                <div className="w-8 h-8 rounded-xl bg-neutral-200 flex items-center justify-center text-neutral-900">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/20 flex items-center justify-center text-cyan-400">
                   <Mail className="w-4 h-4" />
                 </div>
                 <span>{personalInfo.socials.email}</span>
               </a>
 
-              <div className="p-3.5 rounded-2xl bg-neutral-50 border border-neutral-300 text-xs font-mono text-neutral-800 font-medium flex items-center gap-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700">
+              <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs font-mono text-white/60 font-medium flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <span>Waktu Respon Cepat (&lt;24 Jam)</span>
@@ -84,14 +84,14 @@ export const ContactSection: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-neutral-200">
-            <span className="text-xs font-mono text-neutral-500 font-bold block mb-3">SOCIAL CHANNELS</span>
+          <div className="mt-8 pt-6 border-t border-white/10">
+            <span className="text-xs font-mono text-white/40 font-bold block mb-3">SOCIAL CHANNELS</span>
             <div className="flex items-center gap-3">
               <a
                 href={personalInfo.socials.github}
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 rounded-xl bg-neutral-100 hover:bg-neutral-900 hover:text-white border border-neutral-300 flex items-center justify-center text-neutral-800 transition-all shadow-sm"
+                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/30 flex items-center justify-center text-white/50 hover:text-cyan-400 transition-all shadow-sm"
               >
                 <Github className="w-5 h-5" />
               </a>
@@ -99,7 +99,7 @@ export const ContactSection: React.FC = () => {
                 href={personalInfo.socials.linkedin}
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 rounded-xl bg-neutral-100 hover:bg-neutral-900 hover:text-white border border-neutral-300 flex items-center justify-center text-neutral-800 transition-all shadow-sm"
+                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/30 flex items-center justify-center text-white/50 hover:text-cyan-400 transition-all shadow-sm"
               >
                 <Linkedin className="w-5 h-5" />
               </a>
@@ -107,7 +107,7 @@ export const ContactSection: React.FC = () => {
                 href={personalInfo.socials.twitter}
                 target="_blank"
                 rel="noreferrer"
-                className="w-10 h-10 rounded-xl bg-neutral-100 hover:bg-neutral-900 hover:text-white border border-neutral-300 flex items-center justify-center text-neutral-800 transition-all shadow-sm"
+                className="w-10 h-10 rounded-xl bg-white/5 hover:bg-cyan-500/20 border border-white/10 hover:border-cyan-500/30 flex items-center justify-center text-white/50 hover:text-cyan-400 transition-all shadow-sm"
               >
                 <Twitter className="w-5 h-5" />
               </a>
@@ -116,14 +116,14 @@ export const ContactSection: React.FC = () => {
         </div>
 
         {/* Right Card: Message Form (7 cols) */}
-        <div className="lg:col-span-7 glass-panel bg-white/85 rounded-3xl p-8 border border-neutral-300 shadow-sm relative">
+        <div className="lg:col-span-7 glass-panel rounded-3xl p-8 relative">
           {submitted ? (
             <div className="h-full flex flex-col items-center justify-center text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center text-emerald-800 mb-4 animate-bounce">
+              <div className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-4 animate-bounce">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h4 className="text-2xl font-bold text-neutral-950 mb-2">Pesan Berhasil Terkirim!</h4>
-              <p className="text-sm text-neutral-700 max-w-md">
+              <h4 className="text-2xl font-bold text-white mb-2">Pesan Berhasil Terkirim!</h4>
+              <p className="text-sm text-white/50 max-w-md">
                 Terima kasih telah menghubungi. Saya akan segera membalas pesan Anda secepatnya.
               </p>
               <button
@@ -132,7 +132,7 @@ export const ContactSection: React.FC = () => {
                   setSubmitted(false);
                   setFormData({ name: '', email: '', message: '' });
                 }}
-                className="mt-6 px-6 py-2.5 rounded-full bg-neutral-100 border border-neutral-300 text-xs font-mono text-neutral-800 font-bold hover:bg-neutral-900 hover:text-white transition-colors"
+                className="mt-6 px-6 py-2.5 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-white/70 font-bold hover:bg-cyan-500/20 hover:border-cyan-500/30 hover:text-white transition-colors"
               >
                 Kirim Pesan Lainnya
               </button>
@@ -141,45 +141,45 @@ export const ContactSection: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-5 text-left">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 <div>
-                  <label className="text-xs font-mono text-neutral-900 font-bold block mb-2">NAMA LENGKAP</label>
+                  <label className="text-xs font-mono text-white/70 font-bold block mb-2">NAMA LENGKAP</label>
                   <input
                     type="text"
                     required
                     placeholder="misal: Alex Pratama"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-neutral-50 border border-neutral-300 text-sm text-neutral-950 placeholder-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all font-medium"
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/25 focus:outline-none focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/30 transition-all font-medium"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-mono text-neutral-900 font-bold block mb-2">EMAIL</label>
+                  <label className="text-xs font-mono text-white/70 font-bold block mb-2">EMAIL</label>
                   <input
                     type="email"
                     required
                     placeholder="alex@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-neutral-50 border border-neutral-300 text-sm text-neutral-950 placeholder-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all font-medium"
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/25 focus:outline-none focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/30 transition-all font-medium"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-xs font-mono text-neutral-900 font-bold block mb-2">PESAN / DETAIL PROYEK</label>
+                <label className="text-xs font-mono text-white/70 font-bold block mb-2">PESAN / DETAIL PROYEK</label>
                 <textarea
                   required
                   rows={4}
                   placeholder="Ceritakan tentang proyek atau ide yang ingin Anda buat..."
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-neutral-50 border border-neutral-300 text-sm text-neutral-950 placeholder-neutral-400 focus:outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 transition-all resize-none font-medium"
+                  className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/25 focus:outline-none focus:border-cyan-500/40 focus:ring-1 focus:ring-cyan-500/30 transition-all resize-none font-medium"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-4 rounded-xl bg-neutral-900 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:bg-neutral-800 transition-all disabled:opacity-50"
+                className="w-full py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-cyan-400 text-black font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:from-cyan-400 hover:to-cyan-300 transition-all disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <span>Mengirimkan Pesan...</span>

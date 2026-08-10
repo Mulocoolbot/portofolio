@@ -53,9 +53,9 @@ export const CustomCursor: React.FC = () => {
 
   return (
     <>
-      {/* Center Small Black Dot */}
+      {/* Center Small White Dot */}
       <motion.div
-        className="fixed top-0 left-0 w-2.5 h-2.5 bg-mono-black rounded-full pointer-events-none z-50"
+        className="fixed top-0 left-0 w-2.5 h-2.5 bg-white rounded-full pointer-events-none z-50"
         animate={{
           x: mousePosition.x - 5,
           y: mousePosition.y - 5,
@@ -66,14 +66,14 @@ export const CustomCursor: React.FC = () => {
 
       {/* Trailing Outer Ring */}
       <motion.div
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-50 border border-mono-black/40"
+        className="fixed top-0 left-0 rounded-full pointer-events-none z-50 border border-white/40"
         animate={{
           x: mousePosition.x - (isHovered ? 26 : 16),
           y: mousePosition.y - (isHovered ? 26 : 16),
           width: isHovered ? 52 : 32,
           height: isHovered ? 52 : 32,
-          backgroundColor: isHovered ? 'rgba(0, 0, 0, 0.05)' : 'transparent',
-          borderColor: isHovered ? 'rgba(0, 0, 0, 0.7)' : 'rgba(0, 0, 0, 0.3)',
+          backgroundColor: isHovered ? 'rgba(79, 195, 247, 0.08)' : 'transparent',
+          borderColor: isHovered ? 'rgba(79, 195, 247, 0.5)' : 'rgba(255, 255, 255, 0.3)',
         }}
         transition={{ type: 'spring', damping: 25, stiffness: 250, mass: 0.2 }}
       />

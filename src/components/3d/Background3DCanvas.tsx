@@ -1,158 +1,86 @@
-import React, { Suspense, useRef, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera } from '@react-three/drei';
+import React, { Suspense, useRef, useEffect, useMemo } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { ParticleField } from './ParticleField';
-import { InteractiveGeometry } from './InteractiveGeometry';
-import { FloatingShapes } from './FloatingShapes';
+import { NeuronNetwork, NEURON_SPATIAL_ANCHORS, NeuronInversionData } from './NeuronNetwork';
+import { StencilInversionHeroText } from './HeroTextInversion3D';
 
-interface BackgroundSceneProps {
-  scrollYProgress: number;
+interface CameraFlightControllerProps {
+  activeStep: number; // 0 = Overview, 1 to 9 = Story Nodes 1 to 9
   mouseRef: React.MutableRefObject<{ x: number; y: number; targetX: number; targetY: number; vx: number; vy: number }>;
 }
 
-const BackgroundScene: React.FC<BackgroundSceneProps> = ({ scrollYProgress, mouseRef }) => {
-  const groupRef = useRef<THREE.Group>(null);
-  const centralMeshGroup = useRef<THREE.Group>(null);
-  const secondaryMeshGroup = useRef<THREE.Group>(null);
-  const tertiaryMeshGroup = useRef<THREE.Group>(null);
-  const prevMouse = useRef({ x: 0, y: 0 });
+const CameraFlightController: React.FC<CameraFlightControllerProps> = ({ activeStep, mouseRef }) => {
+  const { camera } = useThree();
 
-  useFrame((state, delta) => {
+  const currentLookAt = useRef(new THREE.Vector3(0, 0, 0));
+  const targetCamPos = useMemo(() => new THREE.Vector3(0, 0, 7.5), []);
+  const targetLookAt = useMemo(() => new THREE.Vector3(0, 0, 0), []);
+
+  useFrame((_state, _delta) => {
     const mouse = mouseRef.current;
 
-    // Smoothly interpolate current mouse position toward target
+    // Smoothly interpolate mouse coordinates
     mouse.x = THREE.MathUtils.lerp(mouse.x, mouse.targetX, 0.08);
     mouse.y = THREE.MathUtils.lerp(mouse.y, mouse.targetY, 0.08);
 
-    // Calculate cursor velocity for dynamic spin impulse
-    const vx = mouse.x - prevMouse.current.x;
-    const vy = mouse.y - prevMouse.current.y;
-    prevMouse.current.x = mouse.x;
-    prevMouse.current.y = mouse.y;
+    if (activeStep === 0) {
+      // ── Step 0: Overview of the entire Neural Universe ──────────────────
+      const parallaxX = mouse.x * 0.35;
+      const parallaxY = mouse.y * 0.28;
 
-    if (groupRef.current) {
-      // Background moves UP (+Y) when scrolling DOWN, and moves DOWN (-Y) when scrolling UP
-      const targetScrollY = scrollYProgress * 7.5;
-      const scrollRotX = -scrollYProgress * Math.PI * 0.25;
-      
-      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetScrollY, 0.06);
-      
-      // Scene perspective tilts towards the cursor direction
-      const targetSceneRotY = mouse.x * 0.45;
-      const targetSceneRotX = -mouse.y * 0.35 + scrollRotX * 0.2;
-      groupRef.current.rotation.y = THREE.MathUtils.lerp(groupRef.current.rotation.y, targetSceneRotY, 0.05);
-      groupRef.current.rotation.x = THREE.MathUtils.lerp(groupRef.current.rotation.x, targetSceneRotX, 0.05);
-    }
+      targetCamPos.set(parallaxX, parallaxY, 7.5);
+      targetLookAt.set(parallaxX * 0.2, parallaxY * 0.2, 0);
+    } else {
+      // ── Step 1 to 9: Frame 3D Neuron Node on the LEFT (opposite the Card on Right)
+      const storyIdx = activeStep - 1;
+      const anchor = NEURON_SPATIAL_ANCHORS[storyIdx] || [0, 0, 0];
 
-    // 1. Primary Central 3D Mesh: Follows cursor position and rotates along cursor movement vector
-    if (centralMeshGroup.current) {
-      const targetMeshX = mouse.x * 3.4;
-      const targetMeshY = mouse.y * 2.2 + 0.1;
-      
-      centralMeshGroup.current.position.x = THREE.MathUtils.lerp(centralMeshGroup.current.position.x, targetMeshX, 0.08);
-      centralMeshGroup.current.position.y = THREE.MathUtils.lerp(centralMeshGroup.current.position.y, targetMeshY, 0.08);
-      
-      // Dynamic roll & tilt based on cursor velocity & direction
-      centralMeshGroup.current.rotation.z += vx * 1.8;
-      centralMeshGroup.current.rotation.x += vy * 1.5;
-    }
+      const isDesktop = window.innerWidth > 768;
+      // On desktop: offset camera by +0.65 so neuron sits in a balanced space slightly to the right (X ≈ 32%)
+      const cameraOffsetX = isDesktop ? 0.65 : 0.0;
+      const cameraOffsetY = isDesktop ? 0.0 : 0.50; // On mobile, shift camera down so node sits in upper half
+      const lookAtOffsetX = isDesktop ? 0.65 : 0.0;
 
-    // 2. Secondary Mesh: Parallax counter-movement for rich depth
-    if (secondaryMeshGroup.current) {
-      secondaryMeshGroup.current.position.x = THREE.MathUtils.lerp(
-        secondaryMeshGroup.current.position.x,
-        -1.8 - mouse.x * 1.0,
-        0.05
+      const parallaxX = mouse.x * 0.10;
+      const parallaxY = mouse.y * 0.08;
+
+      targetCamPos.set(
+        anchor[0] + cameraOffsetX + parallaxX,
+        anchor[1] + cameraOffsetY + parallaxY,
+        anchor[2] + (isDesktop ? 2.45 : 2.8)
       );
-      secondaryMeshGroup.current.position.y = THREE.MathUtils.lerp(
-        secondaryMeshGroup.current.position.y,
-        -3.8 - mouse.y * 0.8,
-        0.05
+
+      targetLookAt.set(
+        anchor[0] + lookAtOffsetX,
+        anchor[1] + (isDesktop ? 0.0 : 0.08),
+        anchor[2]
       );
     }
 
-    // 3. Tertiary Mesh: Rises during deep scroll
-    if (tertiaryMeshGroup.current) {
-      tertiaryMeshGroup.current.position.x = THREE.MathUtils.lerp(
-        tertiaryMeshGroup.current.position.x,
-        1.8 + mouse.x * 0.8,
-        0.05
-      );
-      tertiaryMeshGroup.current.position.y = THREE.MathUtils.lerp(
-        tertiaryMeshGroup.current.position.y,
-        -7.2 + mouse.y * 0.6,
-        0.05
-      );
-    }
+    // Smooth cinematic damping towards target camera position & lookAt
+    camera.position.lerp(targetCamPos, 0.065);
+    currentLookAt.current.lerp(targetLookAt, 0.075);
+    camera.lookAt(currentLookAt.current);
   });
 
-  return (
-    <group ref={groupRef}>
-      {/* Crisp Lighting Setup */}
-      <ambientLight intensity={0.4} color="#ffffff" />
-      <directionalLight position={[10, 15, 10]} intensity={1.0} color="#ffffff" />
-      <directionalLight position={[-10, -10, -5]} intensity={0.3} color="#e4e4e7" />
-
-      {/* Reactive Monochrome Particle Swarm */}
-      <ParticleField count={450} color="#000000" speed={0.3} />
-
-      {/* Primary Central Mesh - Sleek scale (1.25) tracking cursor across the entire page */}
-      <group ref={centralMeshGroup} position={[0, 0, 0]}>
-        <InteractiveGeometry
-          type="icosahedron"
-          wireframe={false}
-          color="#000000"
-          speed={0.8}
-          interactive={true}
-          scale={1.25}
-        />
-      </group>
-
-      {/* Secondary Accent Geometry - Rises gracefully as you scroll down */}
-      <group ref={secondaryMeshGroup} position={[-1.8, -3.8, -0.5]}>
-        <InteractiveGeometry
-          type="torusKnot"
-          wireframe={false}
-          color="#000000"
-          speed={0.6}
-          interactive={true}
-          scale={0.95}
-        />
-      </group>
-
-      {/* Tertiary Accent Geometry - Rises in lower sections */}
-      <group ref={tertiaryMeshGroup} position={[1.8, -7.2, -0.8]}>
-        <InteractiveGeometry
-          type="quantumCube"
-          wireframe={false}
-          color="#000000"
-          speed={0.7}
-          interactive={true}
-          scale={0.9}
-        />
-      </group>
-
-      {/* Floating Geometric Ornaments */}
-      <FloatingShapes />
-    </group>
-  );
+  return null;
 };
 
-export const Background3DCanvas: React.FC = () => {
-  const scrollRef = useRef(0);
+interface Background3DCanvasProps {
+  activeStep: number;
+  onSelectNode?: (storyIndex: number) => void;
+}
+
+export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeStep, onSelectNode }) => {
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, vx: 0, vy: 0 });
+  const neuronDataRef = useRef<NeuronInversionData>({
+    positions: [],
+    radii: [],
+    lines: [],
+  });
 
   useEffect(() => {
-    // Global Scroll Tracker
-    const handleScroll = () => {
-      const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalScroll > 0) {
-        scrollRef.current = window.scrollY / totalScroll;
-      }
-    };
-
-    // Global Cursor Direction & Position Tracker
+    // Global Cursor Tracker in NDC [-1, 1]
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = (e.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -166,30 +94,53 @@ export const Background3DCanvas: React.FC = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 
   return (
-    <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden bg-white">
+    <div className="fixed inset-0 pointer-events-auto -z-10 overflow-hidden bg-[#000000]">
       <Canvas
         dpr={[1, 2]}
-        gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
-        onCreated={({ scene }) => {
-          scene.background = new THREE.Color('#ffffff');
+        gl={{
+          antialias: true,
+          alpha: false,
+          powerPreference: 'high-performance',
         }}
-        camera={{ position: [0, 0, 7], fov: 45 }}
+        onCreated={({ scene, gl }) => {
+          scene.background = new THREE.Color('#000000');
+          gl.setClearColor('#000000', 1);
+        }}
+        camera={{ position: [0, 0, 7.5], fov: 46 }}
       >
-        <PerspectiveCamera makeDefault position={[0, 0, 7]} fov={45} />
         <Suspense fallback={null}>
-          <BackgroundScene scrollYProgress={scrollRef.current} mouseRef={mouseRef} />
+          {/* Lighting */}
+          <ambientLight intensity={1.0} color="#ffffff" />
+          <directionalLight position={[10, 15, 10]} intensity={1.8} color="#ffffff" />
+          <directionalLight position={[-10, -10, -5]} intensity={0.9} color="#d4d4d8" />
+
+          {/* 3D Camera Flight Interpolator */}
+          <CameraFlightController activeStep={activeStep} mouseRef={mouseRef} />
+
+          {/* Solid White 3D Neural Network */}
+          <NeuronNetwork
+            activeStep={activeStep}
+            mouseRef={mouseRef}
+            neuronDataRef={neuronDataRef}
+            onSelectNode={onSelectNode}
+          />
+
+          {/* Dynamic Color Inversion Hero Text: "WELCOME TO WORLD OF" & "MULLO" */}
+          <StencilInversionHeroText
+            activeStep={activeStep}
+            position={[0, -0.9, 0.4]}
+          />
         </Suspense>
       </Canvas>
     </div>

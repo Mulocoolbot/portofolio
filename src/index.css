@@ -4,52 +4,53 @@
 
 @layer base {
   :root {
-    --color-bg: #ffffff;
-    --color-text: #09090b;
-    --color-accent: #18181b;
+    --color-bg: #0a0a0a;
+    --color-text: #fafafa;
+    --color-accent: #4fc3f7;
+    --color-muted: #a1a1aa;
   }
 
   body {
-    background-color: #ffffff;
-    color: #09090b;
+    background-color: #0a0a0a;
+    color: #fafafa;
     overflow-x: hidden;
     scroll-behavior: smooth;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
-  /* Clean Minimalist Scrollbar */
+  /* Dark Minimalist Scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #ffffff;
+    background: #0a0a0a;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #d4d4d8;
+    background: #27272a;
     border-radius: 9999px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #18181b;
+    background: #4fc3f7;
   }
 }
 
 @layer utilities {
-  /* Dynamic 3D Overlap Inversion: Text appears black on white bg, and flips to bright white over dark 3D objects */
+  /* Dynamic 3D Overlap Inversion: Text appears white on dark bg, and flips over bright 3D objects */
   .blend-invert {
     mix-blend-mode: difference;
     color: #ffffff !important;
   }
 
-  /* High-end White Frosted Glassmorphism */
+  /* Dark Frosted Glassmorphism */
   .glass-panel {
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(15, 15, 15, 0.75);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(24, 24, 27, 0.08);
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 2px 6px -1px rgba(0, 0, 0, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 2px 6px -1px rgba(0, 0, 0, 0.15);
   }
 
   .glass-panel-hover {
@@ -57,26 +58,39 @@
   }
 
   .glass-panel-hover:hover {
-    background: rgba(255, 255, 255, 0.92);
-    border-color: rgba(24, 24, 27, 0.2);
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+    background: rgba(20, 20, 20, 0.9);
+    border-color: rgba(79, 195, 247, 0.15);
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.4), 0 4px 12px -2px rgba(0, 0, 0, 0.2);
   }
 
-  /* Monochrome Subtle Patterns & Gradients */
+  /* Dark Subtle Patterns & Gradients */
   .grid-pattern-light {
     background-size: 32px 32px;
     background-image: 
-      linear-gradient(to right, rgba(0, 0, 0, 0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   }
 
   .dot-pattern-light {
-    background-image: radial-gradient(rgba(0, 0, 0, 0.08) 1px, transparent 1px);
+    background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
     background-size: 24px 24px;
   }
 
   .bg-radial-glow {
-    background: radial-gradient(circle at 50% 40%, rgba(244, 244, 245, 0.8) 0%, rgba(255, 255, 255, 0) 70%);
+    background: radial-gradient(circle at 50% 40%, rgba(79, 195, 247, 0.05) 0%, rgba(10, 10, 10, 0) 70%);
+  }
+
+  /* Hero Section Title Styles */
+  .hero-title {
+    font-family: 'Outfit', 'Inter', system-ui, sans-serif;
+    font-weight: 900;
+    line-height: 0.85;
+    letter-spacing: -0.03em;
+  }
+
+  .hero-subtitle {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-weight: 300;
   }
 }
 

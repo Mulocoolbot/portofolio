@@ -15,8 +15,8 @@ export const LabSection: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState(false);
 
   const colors = [
-    { name: 'Obsidian Black', hex: '#000000' },
-    { name: 'Titanium Charcoal', hex: '#27272a' },
+    { name: 'Cyan Glow', hex: '#4fc3f7' },
+    { name: 'Pure White', hex: '#ffffff' },
     { name: 'Slate Gray', hex: '#52525b' },
     { name: 'Muted Zinc', hex: '#71717a' },
     { name: 'Silver Steel', hex: '#a1a1aa' },
@@ -83,10 +83,10 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
         {/* Left Column: Preset Selector & Experiments List (4 cols) */}
         <div className="lg:col-span-4 space-y-4">
           <div className="flex items-center justify-between px-2">
-            <span className="text-xs font-mono text-neutral-600 font-bold uppercase tracking-wider">
+            <span className="text-xs font-mono text-white/50 font-bold uppercase tracking-wider">
               Eksperimen Presets ({experimentPresets.length})
             </span>
-            <span className="text-[10px] font-mono text-neutral-900 font-bold">Three.js / R3F</span>
+            <span className="text-[10px] font-mono text-cyan-400 font-bold">Three.js / R3F</span>
           </div>
 
           <div className="space-y-3">
@@ -100,24 +100,24 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
                   onClick={() => handleSelectPreset(preset)}
                   className={`p-4 rounded-2xl cursor-pointer transition-all border text-left ${
                     isSelected
-                      ? 'bg-white border-neutral-900 shadow-md ring-1 ring-neutral-900'
-                      : 'bg-white/70 border-neutral-300 hover:border-neutral-500'
+                      ? 'bg-cyan-500/15 border-cyan-500/40 shadow-md ring-1 ring-cyan-500/30'
+                      : 'glass-panel hover:border-white/20'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-neutral-950">
+                    <h4 className="text-sm font-bold text-white">
                       {preset.title}
                     </h4>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-neutral-100 border border-neutral-300 text-neutral-700 font-medium">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-cyan-400 font-medium">
                       {preset.type}
                     </span>
                   </div>
-                  <p className="text-xs text-neutral-700 mt-2 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-white/60 mt-2 line-clamp-2 leading-relaxed">
                     {preset.description}
                   </p>
                   <div className="flex flex-wrap gap-1.5 mt-3">
                     {preset.tags.map((t) => (
-                      <span key={t} className="text-[9px] font-mono text-neutral-600 font-medium">
+                      <span key={t} className="text-[9px] font-mono text-white/40 font-medium">
                         #{t}
                       </span>
                     ))}
@@ -128,29 +128,29 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
           </div>
 
           {/* Quick Note */}
-          <div className="p-4 rounded-2xl bg-white border border-neutral-300 text-xs text-neutral-700 shadow-sm">
-            <span className="text-neutral-950 font-bold block mb-1">💡 Tips Eksperimen:</span>
-            Kamu bisa menambahkan model 3D kustom (GLTF/GLB) atau shader buatanmu sendiri ke dalam folder <code className="text-neutral-900 font-mono bg-neutral-100 px-1 py-0.5 rounded font-bold">src/components/3d/</code>.
+          <div className="p-4 rounded-2xl glass-panel text-xs text-white/70 shadow-sm text-left">
+            <span className="text-cyan-400 font-bold block mb-1">💡 Tips Eksperimen:</span>
+            Kamu bisa menambahkan model 3D kustom (GLTF/GLB) atau shader buatanmu sendiri ke dalam folder <code className="text-cyan-300 font-mono bg-white/10 px-1 py-0.5 rounded font-bold">src/components/3d/</code>.
           </div>
         </div>
 
         {/* Right Column: Interactive 3D Viewport & Realtime Controls (8 cols) */}
-        <div className="lg:col-span-8 glass-panel bg-white/85 rounded-3xl p-6 border border-neutral-300 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-8 glass-panel rounded-3xl p-6 flex flex-col justify-between">
           
           {/* Top Viewport Header */}
-          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-neutral-200">
+          <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-white/10">
             <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-neutral-900 animate-ping" />
-              <div>
-                <h3 className="text-base font-bold text-neutral-950 flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-cyan-400 animate-ping" />
+              <div className="text-left">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
                   <span>{activePreset.title}</span>
                 </h3>
-                <span className="text-[11px] font-mono text-neutral-600 font-medium">Active WebGL Shader &amp; Mesh</span>
+                <span className="text-[11px] font-mono text-white/40 font-medium">Active WebGL Shader &amp; Mesh</span>
               </div>
             </div>
 
             {/* View Mode Toggle: Canvas vs Code Snippet */}
-            <div className="flex items-center gap-1 bg-neutral-100 p-1 rounded-xl border border-neutral-300">
+            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10">
               <button
                 onClick={() => {
                   soundFX.playClick();
@@ -158,8 +158,8 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                   activeTab === 'canvas'
-                    ? 'bg-neutral-900 text-white shadow-sm'
-                    : 'text-neutral-700 hover:text-neutral-950'
+                    ? 'bg-cyan-500/20 text-white border border-cyan-500/30 shadow-sm'
+                    : 'text-white/50 hover:text-white'
                 }`}
               >
                 3D Viewport
@@ -171,8 +171,8 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
                 }}
                 className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all ${
                   activeTab === 'code'
-                    ? 'bg-neutral-900 text-white shadow-sm'
-                    : 'text-neutral-700 hover:text-neutral-950'
+                    ? 'bg-cyan-500/20 text-white border border-cyan-500/30 shadow-sm'
+                    : 'text-white/50 hover:text-white'
                 }`}
               >
                 Code Snippet
@@ -181,7 +181,7 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
           </div>
 
           {/* Main Stage */}
-          <div className="relative w-full h-[400px] sm:h-[450px] my-6 rounded-2xl overflow-hidden bg-white border border-neutral-300 flex items-center justify-center">
+          <div className="relative w-full h-[400px] sm:h-[450px] my-6 rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
             {activeTab === 'canvas' ? (
               <>
                 <Hero3DCanvas
@@ -192,14 +192,14 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
                   interactive={true}
                   className="w-full h-full"
                 />
-                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-white border border-neutral-300 backdrop-blur-md text-[10px] font-mono text-neutral-800 font-bold shadow-sm">
+                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/60 border border-white/10 backdrop-blur-md text-[10px] font-mono text-cyan-400 font-bold shadow-sm">
                   FPS: ~60 | Drag/Hover to Rotate
                 </div>
               </>
             ) : (
-              <div className="w-full h-full p-4 overflow-auto text-left font-mono text-xs bg-neutral-950 text-neutral-100 rounded-xl">
-                <div className="flex justify-between items-center pb-2 mb-2 border-b border-neutral-800">
-                  <span className="text-neutral-400 text-[11px]">// React Three Fiber Code</span>
+              <div className="w-full h-full p-4 overflow-auto text-left font-mono text-xs bg-[#0a0a0a] text-neutral-100 rounded-xl">
+                <div className="flex justify-between items-center pb-2 mb-2 border-b border-white/10">
+                  <span className="text-cyan-400 text-[11px]">// React Three Fiber Code</span>
                   <button
                     onClick={copyCodeToClipboard}
                     className="flex items-center gap-1.5 px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-white text-[11px] transition-colors"
@@ -223,13 +223,13 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
           </div>
 
           {/* Live Controller Panel */}
-          <div className="pt-4 border-t border-neutral-200 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+          <div className="pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
             
             {/* Control 1: Wireframe Toggle */}
-            <div className="p-3 rounded-xl bg-neutral-50 border border-neutral-300 flex flex-col justify-between">
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-between">
               <div className="flex items-center justify-between text-xs mb-2">
-                <span className="font-mono text-neutral-800 font-semibold">Wireframe</span>
-                <span className="font-mono text-neutral-950 font-bold">{wireframe ? 'ON' : 'OFF'}</span>
+                <span className="font-mono text-white/70 font-semibold">Wireframe</span>
+                <span className="font-mono text-cyan-400 font-bold">{wireframe ? 'ON' : 'OFF'}</span>
               </div>
               <button
                 onClick={() => {
@@ -238,8 +238,8 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
                 }}
                 className={`w-full py-1.5 rounded-lg text-xs font-mono font-bold transition-all ${
                   wireframe
-                    ? 'bg-neutral-900 text-white shadow-sm'
-                    : 'bg-white border border-neutral-300 text-neutral-800 hover:text-neutral-950'
+                    ? 'bg-cyan-500/20 text-white border border-cyan-500/30 shadow-sm'
+                    : 'bg-white/5 border border-white/10 text-white/70 hover:text-white'
                 }`}
               >
                 {wireframe ? 'Solid Mode' : 'Wireframe Mode'}
@@ -247,10 +247,10 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
             </div>
 
             {/* Control 2: Speed Slider */}
-            <div className="p-3 rounded-xl bg-neutral-50 border border-neutral-300 flex flex-col justify-between">
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-between">
               <div className="flex items-center justify-between text-xs mb-2">
-                <span className="font-mono text-neutral-800 font-semibold">Rotation Speed</span>
-                <span className="font-mono text-neutral-950 font-bold">{speed.toFixed(1)}x</span>
+                <span className="font-mono text-white/70 font-semibold">Rotation Speed</span>
+                <span className="font-mono text-cyan-400 font-bold">{speed.toFixed(1)}x</span>
               </div>
               <input
                 type="range"
@@ -259,15 +259,15 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
                 step="0.2"
                 value={speed}
                 onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="w-full accent-neutral-900 cursor-pointer"
+                className="w-full accent-cyan-400 cursor-pointer"
               />
             </div>
 
             {/* Control 3: Color Palette */}
-            <div className="p-3 rounded-xl bg-neutral-50 border border-neutral-300 flex flex-col justify-between">
+            <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex flex-col justify-between">
               <div className="flex items-center justify-between text-xs mb-2">
-                <span className="font-mono text-neutral-800 font-semibold">Monochrome Hue</span>
-                <span className="text-[10px] font-mono text-neutral-600 font-bold">
+                <span className="font-mono text-white/70 font-semibold">Monochrome Hue</span>
+                <span className="text-[10px] font-mono text-cyan-400 font-bold">
                   {activeColor}
                 </span>
               </div>
@@ -282,7 +282,7 @@ export function ${activePreset.title.replace(/\s+/g, '')}Scene() {
                     style={{ backgroundColor: c.hex }}
                     className={`w-6 h-6 rounded-full transition-transform ${
                       activeColor === c.hex
-                        ? 'scale-125 ring-2 ring-neutral-900 ring-offset-2 ring-offset-white'
+                        ? 'scale-125 ring-2 ring-cyan-400 ring-offset-2 ring-offset-black'
                         : 'opacity-80 hover:opacity-100'
                     }`}
                     title={c.name}
