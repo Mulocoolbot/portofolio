@@ -204,14 +204,27 @@ function createConnections(neurons: NeuronNode[]): [number, number][] {
   return connections;
 }
 
+interface DragState {
+  isDragging: boolean;
+  isPending: boolean;
+  startX: number;
+  startY: number;
+  rotationY: number;
+  rotationX: number;
+  velocityY: number;
+  velocityX: number;
+}
+
 interface NeuronNetworkProps {
   activeStep: number; // 0 = Overview, 1 to 9 = Story Nodes 1 to 9
   mouseRef: React.MutableRefObject<{ x: number; y: number; targetX: number; targetY: number }>;
   neuronDataRef?: React.MutableRefObject<NeuronInversionData>;
   onSelectNode?: (storyIndex: number) => void;
+  dragRef?: React.MutableRefObject<DragState>;
+  hoveredNeuronRef?: React.MutableRefObject<number>;
 }
 
-export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseRef, neuronDataRef, onSelectNode }) => {
+export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseRef, neuronDataRef, onSelectNode, dragRef, hoveredNeuronRef }) => {
   const groupRef = useRef<THREE.Group>(null);
   const nodeGroupsRef = useRef<(THREE.Group | null)[]>([]);
   const meshRefs = useRef<(THREE.Mesh | null)[]>([]);
@@ -243,6 +256,7 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
   }, []);
 
   const projectedVec = useMemo(() => new THREE.Vector3(), []);
+  const worldPosVec = useMemo(() => new THREE.Vector3(), []);
   const originPos = useMemo(() => new THREE.Vector3(0, 0, 0), []);
 
   useFrame((state, delta) => {
@@ -260,8 +274,61 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
     const cam = state.camera;
     const aspect = state.viewport.aspect;
 
+    // ── 1. Update Group Rotation & World Matrix FIRST so all node transforms follow rotation ──
+    if (groupRef.current) {
+      if (activeStep === 0) {
+        const tiltX = mouse.y * 0.06;
+        const tiltZ = -mouse.x * 0.05;
+
+        // Apply drag rotation with momentum decay
+        if (dragRef) {
+          const drag = dragRef.current;
+
+          // Apply inertia friction when not dragging
+          if (!drag.isDragging) {
+            drag.velocityY *= 0.95;
+            drag.velocityX *= 0.95;
+            drag.rotationY += drag.velocityY;
+            drag.rotationX += drag.velocityX;
+          }
+
+          // Clamp X rotation to prevent flipping
+          drag.rotationX = THREE.MathUtils.clamp(drag.rotationX, -1.2, 1.2);
+
+          // Blend drag rotation with cursor tilt
+          groupRef.current.rotation.y += (drag.rotationY - groupRef.current.rotation.y) * 0.08;
+          groupRef.current.rotation.x += ((tiltX + drag.rotationX) - groupRef.current.rotation.x) * 0.06;
+          groupRef.current.rotation.z += (tiltZ - groupRef.current.rotation.z) * 0.04;
+        } else {
+          groupRef.current.rotation.x += (tiltX - groupRef.current.rotation.x) * 0.04;
+          groupRef.current.rotation.z += (tiltZ - groupRef.current.rotation.z) * 0.04;
+        }
+      } else {
+        // In detail view: smoothly reset rotation to zero
+        groupRef.current.rotation.x += (0 - groupRef.current.rotation.x) * 0.06;
+        groupRef.current.rotation.y += (0 - groupRef.current.rotation.y) * 0.06;
+        groupRef.current.rotation.z += (0 - groupRef.current.rotation.z) * 0.06;
+
+        // Also reset drag state
+        if (dragRef) {
+          dragRef.current.rotationY *= 0.9;
+          dragRef.current.rotationX *= 0.9;
+          dragRef.current.velocityY = 0;
+          dragRef.current.velocityX = 0;
+        }
+      }
+      groupRef.current.updateMatrixWorld(true);
+    }
+
+    const groupWorldMatrix = groupRef.current ? groupRef.current.matrixWorld : new THREE.Matrix4();
+
     // Active story index (0 to 8) when activeStep >= 1
     const currentActiveStoryIdx = activeStep > 0 ? activeStep - 1 : -1;
+
+    // Track which neuron story index is hovered this frame with closest distance in front of camera
+    let hoveredStoryIdx = -1;
+    let closestHoverDist = Infinity;
+    const isDraggingNow = dragRef ? dragRef.current.isDragging : false;
 
     for (let i = 0; i < neurons.length; i++) {
       const n = neurons[i];
@@ -289,7 +356,7 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
         const dxToMouse = exactMouseWorldX - n.zoneCenter.x;
         const dyToMouse = exactMouseWorldY - n.zoneCenter.y;
         const dist2D = Math.sqrt(dxToMouse * dxToMouse + dyToMouse * dyToMouse);
-        const pullFactor = Math.max(0, 1 - dist2D / 3.0) * 0.3;
+        const pullFactor = isDraggingNow ? 0 : Math.max(0, 1 - dist2D / 3.0) * 0.25;
 
         const fullTargetX = n.zoneCenter.x + localOffsetX + (dxToMouse * pullFactor);
         const fullTargetY = n.zoneCenter.y + localOffsetY + (dyToMouse * pullFactor);
@@ -311,14 +378,25 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
       if (nodeGroup) {
         nodeGroup.position.copy(n.position);
 
-        // Screen-space hover detection
-        projectedVec.copy(n.position).project(cam);
+        // ── Calculate EXACT World Position (accounting for rotated parent group!) ──
+        worldPosVec.copy(n.position).applyMatrix4(groupWorldMatrix);
+
+        // Project World Position to Screen NDC [-1, 1]
+        projectedVec.copy(worldPosVec).project(cam);
         const screenDx = projectedVec.x - mouse.x;
         const screenDy = (projectedVec.y - mouse.y) / aspect;
         const screenDistance = Math.sqrt(screenDx * screenDx + screenDy * screenDy);
 
+        // Check if node is in front of camera frustum
+        const isFacingCamera = projectedVec.z < 1.0;
         const hitRadius = n.isMain ? 0.095 : 0.075;
-        const isHovered = screenDistance < hitRadius && bloomEase > 0.7;
+        const isHovered = isFacingCamera && screenDistance < hitRadius && bloomEase > 0.7;
+
+        // Signal hover state to parent for drag conflict avoidance & click detection
+        if (isHovered && n.storyIndex >= 0 && screenDistance < closestHoverDist) {
+          closestHoverDist = screenDistance;
+          hoveredStoryIdx = n.storyIndex;
+        }
 
         // Tailored scale: Refined compact size (0.38) in detail mode
         const targetHoverScale = isActiveNode ? 1.30 : isHovered ? 1.25 : 1.0;
@@ -355,7 +433,7 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
       }
     }
 
-    // Share real-time neuron positions and lines for Text Dynamic Inversion Shader
+    // Share real-time neuron world positions and lines for Text Dynamic Inversion Shader
     if (neuronDataRef) {
       if (!neuronDataRef.current.positions || neuronDataRef.current.positions.length !== neurons.length) {
         neuronDataRef.current.positions = neurons.map(() => new THREE.Vector3());
@@ -367,7 +445,8 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
       }
 
       for (let i = 0; i < neurons.length; i++) {
-        neuronDataRef.current.positions[i].copy(neurons[i].position);
+        worldPosVec.copy(neurons[i].position).applyMatrix4(groupWorldMatrix);
+        neuronDataRef.current.positions[i].copy(worldPosVec);
         neuronDataRef.current.radii[i] = (neurons[i].radius * (neurons[i].isMain ? 1.5 : 1.1) + 0.08) * bloomEase;
       }
 
@@ -426,12 +505,9 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
       }
     }
 
-    // Subtle global scene tilt
-    if (groupRef.current) {
-      const tiltX = activeStep === 0 ? mouse.y * 0.06 : 0;
-      const tiltZ = activeStep === 0 ? -mouse.x * 0.05 : 0;
-      groupRef.current.rotation.x += (tiltX - groupRef.current.rotation.x) * 0.04;
-      groupRef.current.rotation.z += (tiltZ - groupRef.current.rotation.z) * 0.04;
+    // Update hover state for parent (story index, -1 = none)
+    if (hoveredNeuronRef) {
+      hoveredNeuronRef.current = hoveredStoryIdx;
     }
   });
 

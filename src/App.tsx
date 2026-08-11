@@ -27,8 +27,15 @@ export const App: React.FC = () => {
     isThrottled.current = true;
 
     setActiveStep((prev) => {
-      const next = prev + direction;
-      return Math.max(0, Math.min(totalSteps, next));
+      if (direction === 1) {
+        // Return to Overview (0) automatically when scrolling past the last detail section
+        if (prev >= totalSteps) {
+          return 0;
+        }
+        return prev + 1;
+      } else {
+        return Math.max(0, prev - 1);
+      }
     });
     soundFX.playClick();
 
@@ -105,47 +112,6 @@ export const App: React.FC = () => {
     };
   }, [advanceStep, navigateToStep]);
 
-  // Navbar section mapping to steps
-  const activeSectionId =
-    activeStep === 0
-      ? 'hero'
-      : activeStep <= 2
-      ? 'about'
-      : activeStep <= 4
-      ? 'experience'
-      : activeStep === 5
-      ? 'projects'
-      : activeStep === 6
-      ? 'lab'
-      : activeStep <= 8
-      ? 'education'
-      : 'contact';
-
-  const handleNavClick = (sectionId: string) => {
-    switch (sectionId) {
-      case 'hero':
-        navigateToStep(0);
-        break;
-      case 'about':
-        navigateToStep(2);
-        break;
-      case 'experience':
-        navigateToStep(3);
-        break;
-      case 'projects':
-        navigateToStep(5);
-        break;
-      case 'lab':
-        navigateToStep(6);
-        break;
-      case 'contact':
-        navigateToStep(9);
-        break;
-      default:
-        navigateToStep(0);
-    }
-  };
-
   return (
     <div className="h-screen w-screen overflow-hidden bg-transparent relative font-sans text-white select-none">
       {/* Interactive 3D Canvas Background with Camera Flight */}
@@ -157,8 +123,8 @@ export const App: React.FC = () => {
       {/* Custom Interactive Monochrome Cursor */}
       <CustomCursor />
 
-      {/* Top Floating Glassmorphism Navbar */}
-      <Navbar activeSection={activeSectionId} onNavigate={handleNavClick} />
+      {/* Top Floating Glassmorphism Navbar — hidden on Overview, visible on Detail */}
+      <Navbar activeStep={activeStep} onNavigateStep={navigateToStep} />
 
       {/* ── Step 0: Hero Section with Typewriter & Inversion ────────────────── */}
       <HeroSection
@@ -177,3 +143,4 @@ export const App: React.FC = () => {
 };
 
 export default App;
+

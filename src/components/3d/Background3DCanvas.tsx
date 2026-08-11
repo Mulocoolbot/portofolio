@@ -1,8 +1,10 @@
-import React, { Suspense, useRef, useEffect, useMemo } from 'react';
+import React, { Suspense, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import { NeuronNetwork, NEURON_SPATIAL_ANCHORS, NeuronInversionData } from './NeuronNetwork';
 import { StencilInversionHeroText } from './HeroTextInversion3D';
+import { Starfield } from './Starfield';
+import { CosmicEvents } from './CosmicEvents';
 
 interface CameraFlightControllerProps {
   activeStep: number; // 0 = Overview, 1 to 9 = Story Nodes 1 to 9
@@ -36,9 +38,8 @@ const CameraFlightController: React.FC<CameraFlightControllerProps> = ({ activeS
       const anchor = NEURON_SPATIAL_ANCHORS[storyIdx] || [0, 0, 0];
 
       const isDesktop = window.innerWidth > 768;
-      // On desktop: offset camera by +0.65 so neuron sits in a balanced space slightly to the right (X ≈ 32%)
       const cameraOffsetX = isDesktop ? 0.65 : 0.0;
-      const cameraOffsetY = isDesktop ? 0.0 : 0.50; // On mobile, shift camera down so node sits in upper half
+      const cameraOffsetY = isDesktop ? 0.0 : 0.50;
       const lookAtOffsetX = isDesktop ? 0.65 : 0.0;
 
       const parallaxX = mouse.x * 0.10;
@@ -79,11 +80,79 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
     lines: [],
   });
 
+  // ── Drag-to-Rotate State ───────────────────────────────────────────────
+  const dragRef = useRef({
+    isDragging: false,
+    isPending: false,
+    startX: 0,
+    startY: 0,
+    rotationY: 0,
+    rotationX: 0,
+    velocityY: 0,
+    velocityX: 0,
+  });
+
+  // Track which neuron story index the cursor is hovering (-1 = none)
+  // This is set every frame by NeuronNetwork's screen-space projection check
+  const hoveredNeuronRef = useRef(-1);
+
+  const DRAG_THRESHOLD = 5;
+
+  // Stable callback ref so the event listener always has the latest onSelectNode
+  const onSelectNodeRef = useRef(onSelectNode);
+  onSelectNodeRef.current = onSelectNode;
+
   useEffect(() => {
-    // Global Cursor Tracker in NDC [-1, 1]
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = (e.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      const drag = dragRef.current;
+
+      // Check if pending drag should become active (movement threshold reached)
+      if (drag.isPending && !drag.isDragging) {
+        const dx = e.clientX - drag.startX;
+        const dy = e.clientY - drag.startY;
+        if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+          drag.isDragging = true;
+          drag.isPending = false;
+        }
+      }
+
+      // Continue drag rotation if actually dragging
+      if (drag.isDragging) {
+        const deltaX = e.clientX - drag.startX;
+        const deltaY = e.clientY - drag.startY;
+        drag.velocityY = deltaX * 0.003;
+        drag.velocityX = deltaY * 0.003;
+        drag.rotationY += drag.velocityY;
+        drag.rotationX += drag.velocityX;
+        drag.startX = e.clientX;
+        drag.startY = e.clientY;
+      }
+    };
+
+    const handleMouseDown = (e: MouseEvent) => {
+      // Only prepare drag if NOT hovering a neuron node
+      if (hoveredNeuronRef.current < 0) {
+        dragRef.current.isPending = true;
+        dragRef.current.isDragging = false;
+        dragRef.current.startX = e.clientX;
+        dragRef.current.startY = e.clientY;
+      }
+    };
+
+    const handleMouseUp = () => {
+      const wasDragging = dragRef.current.isDragging;
+      dragRef.current.isDragging = false;
+      dragRef.current.isPending = false;
+
+      // ── DOM-level click detection for neuron nodes ──
+      // If the user didn't drag (simple click) and a neuron is hovered,
+      // fire onSelectNode to navigate to that neuron's detail section.
+      if (!wasDragging && hoveredNeuronRef.current >= 0 && onSelectNodeRef.current) {
+        onSelectNodeRef.current(hoveredNeuronRef.current);
+      }
     };
 
     // Touch Support for Mobile
@@ -95,11 +164,14 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mousedown', handleMouseDown, { passive: true });
+    window.addEventListener('mouseup', handleMouseUp, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
@@ -125,6 +197,12 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
           <directionalLight position={[10, 15, 10]} intensity={1.8} color="#ffffff" />
           <directionalLight position={[-10, -10, -5]} intensity={0.9} color="#d4d4d8" />
 
+          {/* Twinkling Cosmic Background Starfield Asset */}
+          <Starfield />
+
+          {/* 1-Minute Asteroids & 5-Minute Cascading Meteor Showers */}
+          <CosmicEvents />
+
           {/* 3D Camera Flight Interpolator */}
           <CameraFlightController activeStep={activeStep} mouseRef={mouseRef} />
 
@@ -134,6 +212,8 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
             mouseRef={mouseRef}
             neuronDataRef={neuronDataRef}
             onSelectNode={onSelectNode}
+            dragRef={dragRef}
+            hoveredNeuronRef={hoveredNeuronRef}
           />
 
           {/* Dynamic Color Inversion Hero Text: "WELCOME TO WORLD OF" & "MULLO" */}

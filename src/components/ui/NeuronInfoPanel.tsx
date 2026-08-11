@@ -2,19 +2,14 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Sparkles,
-  ChevronLeft,
-  ChevronRight,
   RotateCcw,
   Compass,
   Briefcase,
-  Users,
   Code2,
   Cpu,
   GraduationCap,
   Award,
   Mail,
-  ArrowUpRight,
-  ExternalLink,
   CheckCircle2
 } from 'lucide-react';
 import { NEURON_STORY_DATA, NeuronStoryItem } from '../../data/neuronStoryData';
@@ -64,35 +59,7 @@ export const NeuronInfoPanel: React.FC<NeuronInfoPanelProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-30 flex flex-col justify-between p-4 sm:p-6 lg:p-8 select-none">
-      
-      {/* ── Top HUD Navigation Bar ─────────────────────────────────────────── */}
-      <div className="w-full max-w-7xl mx-auto flex items-center justify-between pointer-events-auto">
-        {/* Left: Active Neuron Breadcrumb & Badge */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/70 border border-white/20 backdrop-blur-md shadow-2xl">
-            <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-            <span className="text-xs font-mono font-bold tracking-[0.2em] text-white/90 uppercase">
-              NEURON 0{activeStep} // 0{totalSteps}
-            </span>
-            <span className="text-white/30">•</span>
-            <span className="text-xs font-mono font-bold text-white uppercase">
-              {currentItem.label}
-            </span>
-          </div>
-        </div>
-
-        {/* Right: Overview Return Button */}
-        <button
-          onClick={onCloseToOverview}
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 text-xs font-mono font-bold text-white transition-all backdrop-blur-md shadow-lg group active:scale-95"
-        >
-          <RotateCcw className="w-3.5 h-3.5 group-hover:-rotate-90 transition-transform duration-300" />
-          <span className="hidden sm:inline">OVERVIEW WORLD</span>
-          <span className="sm:hidden">ESC</span>
-        </button>
-      </div>
-
+    <div className="fixed inset-0 pointer-events-none z-30 flex flex-col justify-between pt-16 pb-4 px-4 sm:px-6 lg:px-8 select-none">
       {/* ── Main Dynamic Story Card (Positioned on the RIGHT, opposite the 3D Neuron on LEFT) ── */}
       <div className="w-full max-w-7xl mx-auto flex justify-end items-center my-auto pointer-events-none">
         <div className="w-full lg:w-[500px] xl:w-[540px] pointer-events-auto">
@@ -209,7 +176,6 @@ export const NeuronInfoPanel: React.FC<NeuronInfoPanelProps> = ({
                     className="w-full py-3 px-6 rounded-xl bg-white text-black font-bold text-xs font-mono flex items-center justify-center gap-2 hover:bg-neutral-200 active:scale-[0.98] transition-all shadow-lg"
                   >
                     <span>{currentItem.actionLabel}</span>
-                    <ArrowUpRight className="w-4 h-4" />
                   </button>
                 </div>
               )}
@@ -218,47 +184,14 @@ export const NeuronInfoPanel: React.FC<NeuronInfoPanelProps> = ({
         </div>
       </div>
 
-      {/* ── Bottom Step Navigation Bar ─────────────────────────────────────── */}
-      <div className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 pointer-events-auto">
-        
-        {/* Left: Previous Button */}
+      {/* ── Bottom Step Navigation: OVERVIEW Only ─────────────────────────── */}
+      <div className="w-full max-w-7xl mx-auto flex items-center justify-center pointer-events-auto">
         <button
-          onClick={handlePrev}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-black/80 hover:bg-black border border-white/20 hover:border-white/40 text-xs font-mono font-bold text-white transition-all backdrop-blur-md shadow-xl active:scale-95"
+          onClick={onCloseToOverview}
+          className="flex items-center gap-2 px-7 py-3 rounded-full bg-black/80 hover:bg-white/15 border border-white/20 hover:border-white/40 text-xs font-mono font-bold text-white transition-all backdrop-blur-md shadow-2xl active:scale-95 group"
         >
-          <ChevronLeft className="w-4 h-4" />
-          <span>{activeStep === 1 ? 'OVERVIEW' : 'PREV NEURON'}</span>
-        </button>
-
-        {/* Center: Fast Jump Dot Steps */}
-        <div className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-black/80 border border-white/20 backdrop-blur-md shadow-xl">
-          {NEURON_STORY_DATA.map((item, idx) => {
-            const stepNum = idx + 1;
-            const isActive = stepNum === activeStep;
-            return (
-              <button
-                key={item.id}
-                onClick={() => onNavigateStep(stepNum)}
-                className={`relative px-2.5 py-1 rounded-full text-xs font-mono font-bold transition-all ${
-                  isActive
-                    ? 'bg-white text-black shadow-md scale-105'
-                    : 'text-white/50 hover:text-white hover:bg-white/10'
-                }`}
-                title={item.label}
-              >
-                0{stepNum}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Right: Next Button */}
-        <button
-          onClick={handleNext}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-black hover:bg-neutral-200 border border-white font-mono font-bold text-xs transition-all shadow-xl active:scale-95"
-        >
-          <span>{activeStep === totalSteps ? 'FINISH OVERVIEW' : 'NEXT NEURON'}</span>
-          <ChevronRight className="w-4 h-4" />
+          <RotateCcw className="w-3.5 h-3.5 group-hover:-rotate-90 transition-transform duration-300" />
+          <span>OVERVIEW</span>
         </button>
       </div>
 

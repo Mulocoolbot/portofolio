@@ -24,7 +24,7 @@ class SoundFX {
     return this.enabled;
   }
 
-  // Futuristic soft click chirp
+  // Futuristic crisp click chirp (louder and richer)
   public playClick() {
     if (!this.enabled) return;
     try {
@@ -32,27 +32,28 @@ class SoundFX {
       if (!this.ctx) return;
       if (this.ctx.state === 'suspended') this.ctx.resume();
 
+      const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1400, this.ctx.currentTime + 0.05);
+      osc.frequency.setValueAtTime(750, now);
+      osc.frequency.exponentialRampToValueAtTime(1600, now + 0.06);
 
-      gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+      gain.gain.setValueAtTime(0.32, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.05);
+      osc.start(now);
+      osc.stop(now + 0.06);
     } catch {
       // Audio not permitted or failed
     }
   }
 
-  // Subtle hover tick
+  // Subtle crisp hover tick (louder and clear)
   public playHover() {
     if (!this.enabled) return;
     try {
@@ -60,27 +61,28 @@ class SoundFX {
       if (!this.ctx) return;
       if (this.ctx.state === 'suspended') this.ctx.resume();
 
+      const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
 
       osc.type = 'triangle';
-      osc.frequency.setValueAtTime(320, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(480, this.ctx.currentTime + 0.03);
+      osc.frequency.setValueAtTime(360, now);
+      osc.frequency.exponentialRampToValueAtTime(600, now + 0.035);
 
-      gain.gain.setValueAtTime(0.03, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.03);
+      gain.gain.setValueAtTime(0.16, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
 
       osc.connect(gain);
       gain.connect(this.ctx.destination);
 
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.03);
+      osc.start(now);
+      osc.stop(now + 0.035);
     } catch {
       // Audio not permitted
     }
   }
 
-  // Success / Confetti chime
+  // Success / Confetti chime (clear and vibrant)
   public playSuccess() {
     if (!this.enabled) return;
     try {
@@ -89,22 +91,23 @@ class SoundFX {
       if (this.ctx.state === 'suspended') this.ctx.resume();
 
       const freqs = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      const now = this.ctx.currentTime;
       freqs.forEach((freq, idx) => {
         if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime + idx * 0.06);
+        osc.frequency.setValueAtTime(freq, now + idx * 0.06);
 
-        gain.gain.setValueAtTime(0.05, this.ctx.currentTime + idx * 0.06);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + idx * 0.06 + 0.2);
+        gain.gain.setValueAtTime(0.24, now + idx * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.22);
 
         osc.connect(gain);
         gain.connect(this.ctx.destination);
 
-        osc.start(this.ctx.currentTime + idx * 0.06);
-        osc.stop(this.ctx.currentTime + idx * 0.06 + 0.2);
+        osc.start(now + idx * 0.06);
+        osc.stop(now + idx * 0.06 + 0.22);
       });
     } catch {
       // Audio not permitted
