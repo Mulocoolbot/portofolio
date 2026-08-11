@@ -5,6 +5,7 @@ import { NeuronNetwork, NEURON_SPATIAL_ANCHORS, NeuronInversionData } from './Ne
 import { StencilInversionHeroText } from './HeroTextInversion3D';
 import { Starfield } from './Starfield';
 import { CosmicEvents } from './CosmicEvents';
+import { soundFX } from '../ui/SoundEffects';
 
 interface CameraFlightControllerProps {
   activeStep: number; // 0 = Overview, 1 to 9 = Story Nodes 1 to 9
@@ -84,6 +85,7 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
   const dragRef = useRef({
     isDragging: false,
     isPending: false,
+    hasPlayedSwing: false,
     startX: 0,
     startY: 0,
     rotationY: 0,
@@ -91,6 +93,11 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
     velocityY: 0,
     velocityX: 0,
   });
+
+  // Timer that resets swing flag when cursor stops moving during a drag,
+  // so the next movement burst triggers the SFX again without releasing click.
+  const swingIdleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const SWING_IDLE_MS = 150; // ms of no movement before a new "burst" is recognised
 
   // Track which neuron story index the cursor is hovering (-1 = none)
   // This is set every frame by NeuronNetwork's screen-space projection check
@@ -102,6 +109,21 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
   const onSelectNodeRef = useRef(onSelectNode);
   onSelectNodeRef.current = onSelectNode;
 
+  /** Clear and (optionally) restart the swing-idle timer */
+  const resetSwingIdleTimer = () => {
+    if (swingIdleTimerRef.current) {
+      clearTimeout(swingIdleTimerRef.current);
+      swingIdleTimerRef.current = null;
+    }
+    // Only schedule a reset if the user is still dragging
+    if (dragRef.current.isDragging) {
+      swingIdleTimerRef.current = setTimeout(() => {
+        // Cursor stopped → allow the next movement to play swing again
+        dragRef.current.hasPlayedSwing = false;
+      }, SWING_IDLE_MS);
+    }
+  };
+
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       mouseRef.current.targetX = (e.clientX / window.innerWidth) * 2 - 1;
@@ -109,17 +131,22 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
 
       const drag = dragRef.current;
 
-      // Check if pending drag should become active (movement threshold reached)
+      // Transition from pending → dragging on first movement past threshold
       if (drag.isPending && !drag.isDragging) {
         const dx = e.clientX - drag.startX;
         const dy = e.clientY - drag.startY;
         if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
           drag.isDragging = true;
           drag.isPending = false;
+          if (!drag.hasPlayedSwing) {
+            drag.hasPlayedSwing = true;
+            soundFX.playNeuronSwing();
+          }
+          resetSwingIdleTimer();
         }
       }
 
-      // Continue drag rotation if actually dragging
+      // Continue smooth drag rotation; play swing on each new movement burst
       if (drag.isDragging) {
         const deltaX = e.clientX - drag.startX;
         const deltaY = e.clientY - drag.startY;
@@ -129,6 +156,14 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
         drag.rotationX += drag.velocityX;
         drag.startX = e.clientX;
         drag.startY = e.clientY;
+
+        // If swing was reset by idle timer, play on this new burst
+        if (!drag.hasPlayedSwing) {
+          drag.hasPlayedSwing = true;
+          soundFX.playNeuronSwing();
+        }
+        // Restart the idle timer on every move event
+        resetSwingIdleTimer();
       }
     };
 
@@ -137,6 +172,7 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
       if (hoveredNeuronRef.current < 0) {
         dragRef.current.isPending = true;
         dragRef.current.isDragging = false;
+        dragRef.current.hasPlayedSwing = false;
         dragRef.current.startX = e.clientX;
         dragRef.current.startY = e.clientY;
       }
@@ -146,6 +182,12 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
       const wasDragging = dragRef.current.isDragging;
       dragRef.current.isDragging = false;
       dragRef.current.isPending = false;
+      dragRef.current.hasPlayedSwing = false;
+      // Clear idle timer on release
+      if (swingIdleTimerRef.current) {
+        clearTimeout(swingIdleTimerRef.current);
+        swingIdleTimerRef.current = null;
+      }
 
       // ── DOM-level click detection for neuron nodes ──
       // If the user didn't drag (simple click) and a neuron is hovered,
@@ -156,23 +198,78 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
     };
 
     // Touch Support for Mobile
+    const handleTouchStart = (e: TouchEvent) => {
+      if (e.touches.length > 0 && hoveredNeuronRef.current < 0) {
+        dragRef.current.isPending = true;
+        dragRef.current.isDragging = false;
+        dragRef.current.hasPlayedSwing = false;
+        dragRef.current.startX = e.touches[0].clientX;
+        dragRef.current.startY = e.touches[0].clientY;
+      }
+    };
+
     const handleTouchMove = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         mouseRef.current.targetX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
         mouseRef.current.targetY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+
+        const drag = dragRef.current;
+        if (drag.isPending && !drag.isDragging) {
+          const dx = e.touches[0].clientX - drag.startX;
+          const dy = e.touches[0].clientY - drag.startY;
+          if (Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+            drag.isDragging = true;
+            drag.isPending = false;
+            if (!drag.hasPlayedSwing) {
+              drag.hasPlayedSwing = true;
+              soundFX.playNeuronSwing();
+            }
+            resetSwingIdleTimer();
+          }
+        }
+        if (drag.isDragging) {
+          const deltaX = e.touches[0].clientX - drag.startX;
+          const deltaY = e.touches[0].clientY - drag.startY;
+          drag.velocityY = deltaX * 0.003;
+          drag.velocityX = deltaY * 0.003;
+          drag.rotationY += drag.velocityY;
+          drag.rotationX += drag.velocityX;
+          drag.startX = e.touches[0].clientX;
+          drag.startY = e.touches[0].clientY;
+
+          if (!drag.hasPlayedSwing) {
+            drag.hasPlayedSwing = true;
+            soundFX.playNeuronSwing();
+          }
+          resetSwingIdleTimer();
+        }
+      }
+    };
+
+    const handleTouchEnd = () => {
+      dragRef.current.isDragging = false;
+      dragRef.current.isPending = false;
+      dragRef.current.hasPlayedSwing = false;
+      if (swingIdleTimerRef.current) {
+        clearTimeout(swingIdleTimerRef.current);
+        swingIdleTimerRef.current = null;
       }
     };
 
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('mousedown', handleMouseDown, { passive: true });
     window.addEventListener('mouseup', handleMouseUp, { passive: true });
+    window.addEventListener('touchstart', handleTouchStart, { passive: true });
     window.addEventListener('touchmove', handleTouchMove, { passive: true });
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mousedown', handleMouseDown);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, []);
 

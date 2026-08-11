@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Volume2, VolumeX, Menu, X, Sparkles, Terminal, ChevronDown } from 'lucide-react';
+import { Settings, Menu, X, Sparkles, Terminal, ChevronDown } from 'lucide-react';
 import { soundFX } from './SoundEffects';
 import { NEURON_STORY_DATA } from '../../data/neuronStoryData';
 
 interface NavbarProps {
   activeStep: number; // 0 = Overview (hidden), 1-9 = detail sections
   onNavigateStep: (step: number) => void;
+  onOpenSettings: () => void;
 }
 
 // Map each step to a navbar section id
@@ -51,19 +52,11 @@ const NAV_ITEMS: NavItem[] = [
   { id: 'contact', label: 'Contact', step: 9, highlight: true },
 ];
 
-export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep }) => {
-  const [soundEnabled, setSoundEnabled] = useState(true);
+export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep, onOpenSettings }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expDropdownOpen, setExpDropdownOpen] = useState(false);
   const [mobileExpDropdownOpen, setMobileExpDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-
-  const toggleSound = () => {
-    const nextState = !soundEnabled;
-    setSoundEnabled(nextState);
-    soundFX.setEnabled(nextState);
-    if (nextState) soundFX.playClick();
-  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -85,7 +78,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep }) =>
   }, [activeStep]);
 
   const handleItemClick = (step: number) => {
-    soundFX.playClick();
     onNavigateStep(step);
     setMobileMenuOpen(false);
     setExpDropdownOpen(false);
@@ -110,7 +102,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep }) =>
           {/* Brand / Logo — click returns to Overview */}
           <button
             onClick={() => {
-              soundFX.playClick();
               onNavigateStep(0);
             }}
             className="flex items-center gap-2.5 group focus:outline-none"
@@ -221,19 +212,19 @@ export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep }) =>
             })}
           </div>
 
-          {/* Controls & Sound FX Toggle */}
+          {/* Controls: Settings Button & Mobile Menu */}
           <div className="flex items-center gap-3">
-            {/* Sound FX Toggle */}
+            {/* Settings Button */}
             <button
-              onClick={toggleSound}
-              title={soundEnabled ? 'Mute Interface Sound' : 'Unmute Interface Sound'}
-              className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 text-white/50 hover:text-white transition-colors"
+              onClick={() => {
+                soundFX.playClick();
+                onOpenSettings();
+              }}
+              onMouseEnter={() => soundFX.playHover()}
+              title="System & Audio Settings"
+              className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white transition-all group active:scale-95"
             >
-              {soundEnabled ? (
-                <Volume2 className="w-4 h-4 text-white" />
-              ) : (
-                <VolumeX className="w-4 h-4 text-white/30" />
-              )}
+              <Settings className="w-4 h-4 text-cyan-400 group-hover:rotate-90 transition-transform duration-300" />
             </button>
 
             {/* Mobile Menu Button */}
@@ -327,6 +318,23 @@ export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep }) =>
                     </button>
                   );
                 })}
+
+                {/* Mobile Settings Row */}
+                <div className="pt-2 border-t border-white/10 mt-1">
+                  <button
+                    onClick={() => {
+                      soundFX.playClick();
+                      setMobileMenuOpen(false);
+                      onOpenSettings();
+                    }}
+                    className="w-full text-left px-4 py-2.5 rounded-xl text-sm font-semibold text-cyan-400 hover:bg-white/5 flex items-center justify-between transition-all"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Settings className="w-4 h-4" />
+                      <span>Settings / Pengaturan</span>
+                    </span>
+                  </button>
+                </div>
               </div>
             </motion.div>
           )}

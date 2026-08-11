@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 
-export const CustomCursor: React.FC = () => {
+interface CustomCursorProps {
+  enabled?: boolean;
+}
+
+export const CustomCursor: React.FC<CustomCursorProps> = ({ enabled = true }) => {
   const [mousePosition, setMousePosition] = useState({ x: -100, y: -100 });
   const [isHovered, setIsHovered] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
@@ -44,8 +48,8 @@ export const CustomCursor: React.FC = () => {
     };
   }, [isVisible]);
 
-  // Don't render custom cursor on mobile touch devices
-  if (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches) {
+  // Don't render custom cursor on mobile touch devices or if disabled
+  if (!enabled || (typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches)) {
     return null;
   }
 
