@@ -185,9 +185,10 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
           alpha: false,
           powerPreference: 'high-performance',
         }}
-        onCreated={({ scene, gl }) => {
+        onCreated={({ scene, gl, camera }) => {
           scene.background = new THREE.Color('#000000');
           gl.setClearColor('#000000', 1);
+          camera.layers.enable(1);
         }}
         camera={{ position: [0, 0, 7.5], fov: 46 }}
       >

@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 
+export const maskModeUniform = { value: 0.0 };
+
 interface StencilInversionHeroTextProps {
   activeStep: number;
   position?: [number, number, number];
@@ -30,13 +32,25 @@ const fragmentShader = `
     // Exact screen-space UV coordinate for this pixel
     vec2 screenUv = gl_FragCoord.xy / uResolution;
 
-    // Sample the exact rendered 3D neuron silhouette from the offscreen mask
-    vec4 neuronPixel = texture2D(uNeuronMask, screenUv);
+    // Sample multi-channel mask:
+    // R > 0.2: 3D Neuron Solid Body / Axon Line
+    // G > 0.2: Neuron Tag Pill Card Background
+    // B > 0.2: Neuron Tag Text / Step Badge Icon
+    vec4 maskPixel = texture2D(uNeuronMask, screenUv);
 
-    // If the 3D neuron geometry / axon line is present at this pixel (luminance > 0.05):
-    // The text inverts to SOLID BLACK (#000000) matching the EXACT 3D faceted geometry!
-    // Otherwise it renders PURE WHITE (#ffffff)!
-    if (neuronPixel.r > 0.05 || neuronPixel.g > 0.05 || neuronPixel.b > 0.05) {
+    float hasNeuron = maskPixel.r > 0.2 ? 1.0 : 0.0;
+    float hasCard = maskPixel.g > 0.2 ? 1.0 : 0.0;
+    float hasTagText = maskPixel.b > 0.2 ? 1.0 : 0.0;
+
+    // Total overlapping active layers at this pixel
+    float overlapCount = hasNeuron + hasCard + hasTagText;
+
+    // True Parity / XOR Even-Odd Inversion:
+    // 0 overlaps (Empty Space): Pure Solid White (#ffffff)
+    // 1 overlap  (Individual Asset): 1st Inversion -> Solid Black (#000000)
+    // 2 overlaps (Simultaneous Assets / Tag text over card): 2nd Inversion -> Solid White (#ffffff)
+    // 3 overlaps: 3rd Inversion -> Solid Black (#000000)
+    if (mod(overlapCount, 2.0) > 0.5) {
       gl_FragColor = vec4(0.0, 0.0, 0.0, textSample.a);
     } else {
       gl_FragColor = vec4(1.0, 1.0, 1.0, textSample.a);
@@ -185,12 +199,17 @@ export const StencilInversionHeroText: React.FC<StencilInversionHeroTextProps> =
       // Hide text plane during mask capture pass
       meshRef.current.visible = false;
 
-      // Render 3D scene (neurons, lines, sparks) to mask render target
+      // Pass 1: Set Mask Capture Mode on all Layer 1 Neuron & Tag assets
+      maskModeUniform.value = 1.0;
+      camera.layers.set(1);
       gl.setRenderTarget(maskRenderTarget);
       gl.clear();
       gl.render(scene, camera);
 
-      // Restore screen render target and reveal text
+      // Pass 2: Restore Screen Render Mode on all assets & reveal inverted text
+      maskModeUniform.value = 0.0;
+      camera.layers.set(0);
+      camera.layers.enable(1);
       gl.setRenderTarget(null);
       meshRef.current.visible = true;
       materialRef.current.uniforms.uNeuronMask.value = maskRenderTarget.texture;
@@ -209,7 +228,7 @@ export const StencilInversionHeroText: React.FC<StencilInversionHeroTextProps> =
 
   return (
     <group ref={groupRef} position={position}>
-      <mesh ref={meshRef} position={[0, 0, 0]} renderOrder={100}>
+      <mesh ref={meshRef} position={[0, 0, 0]} renderOrder={50}>
         <planeGeometry args={[planeWidth, planeHeight]} />
         <shaderMaterial
           ref={materialRef}
@@ -224,16 +243,4 @@ export const StencilInversionHeroText: React.FC<StencilInversionHeroTextProps> =
       </mesh>
     </group>
   );
-};
-
-// Backwards compatibility alias for Hero3DCanvas
-interface StencilInversionTextProps {
-  text?: string;
-  subtext?: string;
-  position?: [number, number, number];
-  fontSize?: number;
-}
-
-export const StencilInversionText: React.FC<StencilInversionTextProps> = () => {
-  return <StencilInversionHeroText activeStep={0} />;
 };

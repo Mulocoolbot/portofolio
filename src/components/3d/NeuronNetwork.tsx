@@ -35,27 +35,40 @@ export interface NeuronInversionData {
 // 18 Structured Spatial Anchors with generous 3D clearance:
 // Nodes 0 to 8 correspond to the 9 Story Chapters
 export const NEURON_SPATIAL_ANCHORS: [number, number, number][] = [
-  // ── 9 Primary Interactive Story Nodes ────────────────────────────────────
-  [0.0, -0.6, 0.4],     // 0: MULLO (Passes right behind Hero text at Step 0)
-  [-2.2, 1.4, 0.2],     // 1: ABOUT ME (Upper-Left)
-  [2.2, 1.5, 0.1],      // 2: EXPERIENCE - ORGANIZATIONAL (Upper-Right)
-  [2.8, 0.2, -0.2],     // 3: EXPERIENCE - PROFESSIONAL (Mid-Right)
-  [1.8, -1.2, 0.3],     // 4: PROJECT (Lower-Right)
-  [-0.1, -1.7, 0.3],    // 5: SKILL (Lower-Center, across "MULLO" title)
-  [-2.2, -1.1, -0.1],   // 6: EDUCATION (Lower-Left)
-  [-2.9, 0.2, 0.1],     // 7: CERTIFICATE (Mid-Left)
-  [0.0, 0.3, 0.8],      // 8: CONTACT (Center Foreground)
+  // ── 9 Primary Interactive Story Nodes (Well-spaced layout) ───────────────
+  [0.0, -0.45, 0.3],    // 0: MULLO (Center-Low)
+  [-2.6, 1.5, 0.2],     // 1: ABOUT ME (Upper-Left)
+  [2.6, 1.5, 0.1],      // 2: EXPERIENCE - ORGANIZATIONAL (Upper-Right)
+  [3.0, 0.1, -0.1],     // 3: EXPERIENCE - PROFESSIONAL (Mid-Right)
+  [2.1, -1.3, 0.2],     // 4: PROJECTS (Lower-Right)
+  [0.0, -1.85, 0.3],    // 5: SKILLS (Lower-Center Nadir, well below MULLO)
+  [-2.3, -1.3, -0.1],   // 6: EDUCATION (Lower-Left)
+  [-3.0, 0.1, 0.1],     // 7: CERTIFICATE (Mid-Left)
+  [0.0, 0.65, 0.7],     // 8: CONTACT (Center Zenith, well above MULLO)
 
   // ── 9 Supporting Connective Satellites ──────────────────────────────────
-  [-3.5, 1.8, -0.5],    // 9: Outer Deep Left
-  [3.5, 1.7, -0.5],     // 10: Outer Deep Right
-  [0.0, 2.3, -0.3],     // 11: Top Zenith
-  [-3.4, -1.8, -0.3],   // 12: Bottom Outer Left
-  [3.4, -1.7, -0.3],    // 13: Bottom Outer Right
-  [0.0, -2.7, -0.4],    // 14: Bottom Nadir
-  [-1.4, 0.6, -1.2],    // 15: Deep Background Left
-  [1.4, 0.7, -1.2],     // 16: Deep Background Right
+  [-3.8, 2.0, -0.5],    // 9: Outer Deep Left
+  [3.8, 1.9, -0.5],     // 10: Outer Deep Right
+  [0.0, 2.5, -0.3],     // 11: Top Zenith
+  [-3.6, -2.0, -0.3],   // 12: Bottom Outer Left
+  [3.6, -1.9, -0.3],    // 13: Bottom Outer Right
+  [0.0, -2.9, -0.4],    // 14: Bottom Nadir
+  [-1.6, 0.7, -1.2],    // 15: Deep Background Left
+  [1.6, 0.8, -1.2],     // 16: Deep Background Right
   [0.0, 0.0, -1.4],     // 17: Deep Core
+];
+
+// Tailored tag placement offsets to ensure 100% legibility and zero collision with other neurons
+const TAG_OFFSETS: [number, number, number][] = [
+  [0.0, 0.42, 0.15],    // 0: MULLO (Above Node 0)
+  [0.0, 0.45, 0.15],    // 1: ABOUT ME (Above Node 1)
+  [0.0, 0.45, 0.15],    // 2: ORGANIZATIONAL (Above Node 2)
+  [0.25, 0.40, 0.15],   // 3: PROFESSIONAL (Above-Right of Node 3)
+  [0.20, -0.44, 0.15],  // 4: PROJECTS (Below-Right of Node 4)
+  [0.0, -0.45, 0.15],   // 5: SKILLS (Below Node 5 - clear of Node 0 above it)
+  [-0.20, -0.44, 0.15], // 6: EDUCATION (Below-Left of Node 6)
+  [-0.25, 0.40, 0.15],  // 7: CERTIFICATE (Above-Left of Node 7)
+  [0.0, 0.45, 0.15],    // 8: CONTACT (Above Node 8)
 ];
 
 const SATELLITE_LABELS = [
@@ -65,74 +78,129 @@ const SATELLITE_LABELS = [
 const MAX_CONN_DIST = 3.9;
 const SPARK_COUNT = 24;
 const BLOOM_DURATION = 1.4;
+import { maskModeUniform } from './HeroTextInversion3D';
 
-// Clean high-contrast monochrome 3D billboard text badge with depthTest disabled
-function createSolidWhiteBadgeTexture(text: string, isMain: boolean, isStory: boolean, stepNum?: number): THREE.CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 512;
-  canvas.height = 128;
-  const ctx = canvas.getContext('2d');
+// Clean high-contrast monochrome 3D billboard text badge with multi-channel mask for parity inversion
+function createSolidWhiteBadgeTexture(text: string, isMain: boolean, isStory: boolean, stepNum?: number): { displayTexture: THREE.CanvasTexture; maskTexture: THREE.CanvasTexture } {
+  // 1. Display Canvas (Solid white pill card with bold black text)
+  const dCanvas = document.createElement('canvas');
+  dCanvas.width = 512;
+  dCanvas.height = 128;
+  const dCtx = dCanvas.getContext('2d');
 
-  if (ctx) {
-    ctx.clearRect(0, 0, 512, 128);
+  // 2. Mask Canvas (Green = Card Body, Blue = Text & Dot)
+  const mCanvas = document.createElement('canvas');
+  mCanvas.width = 512;
+  mCanvas.height = 128;
+  const mCtx = mCanvas.getContext('2d');
 
-    // High-contrast solid dark pill with crisp solid white border
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.95)';
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = isStory ? 4.5 : 2.5;
+  const x = 8;
+  const y = 8;
+  const w = 496;
+  const h = 112;
+  const r = 56;
 
-    const x = 16;
-    const y = 16;
-    const w = 480;
-    const h = 96;
-    const r = 48;
+  if (dCtx) {
+    dCtx.clearRect(0, 0, 512, 128);
 
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
+    // Solid White Capsule Card
+    dCtx.fillStyle = '#ffffff';
+    dCtx.beginPath();
+    dCtx.moveTo(x + r, y);
+    dCtx.lineTo(x + w - r, y);
+    dCtx.quadraticCurveTo(x + w, y, x + w, y + r);
+    dCtx.lineTo(x + w, y + h - r);
+    dCtx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    dCtx.lineTo(x + r, y + h);
+    dCtx.quadraticCurveTo(x, y + h, x, y + h - r);
+    dCtx.lineTo(x, y + r);
+    dCtx.quadraticCurveTo(x, y, x + r, y);
+    dCtx.closePath();
+    dCtx.fill();
 
-    // Solid white step badge if story node
+    // Solid Black step badge dot if story node
     if (isStory && stepNum !== undefined) {
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(68, 64, 24, 0, Math.PI * 2);
-      ctx.fill();
+      dCtx.fillStyle = '#000000';
+      dCtx.beginPath();
+      dCtx.arc(70, 64, 28, 0, Math.PI * 2);
+      dCtx.fill();
 
-      ctx.fillStyle = '#000000';
-      ctx.font = 'bold 24px "JetBrains Mono", monospace, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`0${stepNum}`, 68, 65);
+      dCtx.fillStyle = '#ffffff';
+      dCtx.font = 'bold 24px "JetBrains Mono", monospace, sans-serif';
+      dCtx.textAlign = 'center';
+      dCtx.textBaseline = 'middle';
+      dCtx.fillText(`0${stepNum}`, 70, 65);
     } else {
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.arc(68, 64, 8, 0, Math.PI * 2);
-      ctx.fill();
+      dCtx.fillStyle = '#000000';
+      dCtx.beginPath();
+      dCtx.arc(70, 64, 12, 0, Math.PI * 2);
+      dCtx.fill();
     }
 
-    // Solid white text label
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 34px "JetBrains Mono", monospace, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(text, isStory ? 108 : 96, 64);
+    // Bold Black text label inside the solid white badge card
+    dCtx.fillStyle = '#000000';
+    dCtx.font = 'bold 36px "JetBrains Mono", monospace, sans-serif';
+    dCtx.textAlign = 'left';
+    dCtx.textBaseline = 'middle';
+    dCtx.fillText(text, isStory ? 116 : 98, 64);
   }
 
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.needsUpdate = true;
-  return texture;
+  if (mCtx) {
+    mCtx.clearRect(0, 0, 512, 128);
+
+    // Green Channel = 1.0 (Card Body)
+    mCtx.fillStyle = 'rgb(0, 255, 0)';
+    mCtx.beginPath();
+    mCtx.moveTo(x + r, y);
+    mCtx.lineTo(x + w - r, y);
+    mCtx.quadraticCurveTo(x + w, y, x + w, y + r);
+    mCtx.lineTo(x + w, y + h - r);
+    mCtx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    mCtx.lineTo(x + r, y + h);
+    mCtx.quadraticCurveTo(x, y + h, x, y + h - r);
+    mCtx.lineTo(x, y + r);
+    mCtx.quadraticCurveTo(x, y, x + r, y);
+    mCtx.closePath();
+    mCtx.fill();
+
+    // Green + Blue Channels = 1.0 (Cyan = Card + Text/Dot overlap -> Level 2)
+    mCtx.fillStyle = 'rgb(0, 255, 255)';
+    if (isStory && stepNum !== undefined) {
+      mCtx.beginPath();
+      mCtx.arc(70, 64, 28, 0, Math.PI * 2);
+      mCtx.fill();
+    } else {
+      mCtx.beginPath();
+      mCtx.arc(70, 64, 12, 0, Math.PI * 2);
+      mCtx.fill();
+    }
+
+    mCtx.font = 'bold 36px "JetBrains Mono", monospace, sans-serif';
+    mCtx.textAlign = 'left';
+    mCtx.textBaseline = 'middle';
+    mCtx.fillText(text, isStory ? 116 : 98, 64);
+
+    // Red + Green + Blue Channels = 1.0 (White = Card + Dot + Step Number overlap -> Level 3)
+    if (isStory && stepNum !== undefined) {
+      mCtx.fillStyle = 'rgb(255, 255, 255)';
+      mCtx.font = 'bold 24px "JetBrains Mono", monospace, sans-serif';
+      mCtx.textAlign = 'center';
+      mCtx.textBaseline = 'middle';
+      mCtx.fillText(`0${stepNum}`, 70, 65);
+    }
+  }
+
+  const dTex = new THREE.CanvasTexture(dCanvas);
+  dTex.minFilter = THREE.LinearFilter;
+  dTex.magFilter = THREE.LinearFilter;
+  dTex.needsUpdate = true;
+
+  const mTex = new THREE.CanvasTexture(mCanvas);
+  mTex.minFilter = THREE.LinearFilter;
+  mTex.magFilter = THREE.LinearFilter;
+  mTex.needsUpdate = true;
+
+  return { displayTexture: dTex, maskTexture: mTex };
 }
 
 // Generate neuron nodes with assigned spatial positions
@@ -339,9 +407,9 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
       let targetZ = n.zoneCenter.z;
 
       if (isActiveNode) {
-        // ── In Active Detail Section: Position is STATIC & CONSTANT at its anchor ──
+        // ── In Active Detail Section: Shift neuron point lower (-Y) for spacious composition ──
         targetX = n.zoneCenter.x;
-        targetY = n.zoneCenter.y;
+        targetY = n.zoneCenter.y - 0.22;
         targetZ = n.zoneCenter.z;
       } else {
         // ── In Overview / Inactive: Subtle Harmonic Oscillation & Cursor Pull ──
@@ -420,15 +488,36 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
             ? 0.94
             : isActiveNode
             ? 1.0
-            : 0.14;
+            : 0.10;
 
-          const spriteMat = sprite.material as THREE.SpriteMaterial;
+          const spriteMat = sprite.material as THREE.Material;
           if (spriteMat) {
             spriteMat.opacity = THREE.MathUtils.lerp(spriteMat.opacity, targetOpacity, 0.12);
           }
 
-          const spriteScale = isActiveNode ? 1.15 : isHovered ? 1.05 : 0.92;
-          sprite.scale.set(1.15 * spriteScale, 0.28 * spriteScale, 1);
+          // Adaptive Tag Scale:
+          // In Overview (camera at Z=5.2): 1.36 x 0.34
+          // In Detail Mode (camera close-up at Z=2.5): 0.68 x 0.17 for active node, 0.38 x 0.095 for background
+          const tagScaleFactor = activeStep === 0
+            ? (isHovered ? 1.08 : 1.0)
+            : (isActiveNode ? 0.52 : 0.28);
+
+          const targetWidth = 1.36 * tagScaleFactor;
+          const targetHeight = 0.34 * tagScaleFactor;
+
+          sprite.scale.x = THREE.MathUtils.lerp(sprite.scale.x, targetWidth, 0.12);
+          sprite.scale.y = THREE.MathUtils.lerp(sprite.scale.y, targetHeight, 0.12);
+          sprite.scale.z = 1;
+
+          // Adaptive Tag Position Offset in Detail Mode (Generous vertical space above neuron):
+          const baseOffset = TAG_OFFSETS[n.storyIndex] || [0, n.radius + 0.38, 0.15];
+          const targetOffsetX = activeStep === 0 ? baseOffset[0] : (isActiveNode ? 0.0 : baseOffset[0] * 0.45);
+          const targetOffsetY = activeStep === 0 ? baseOffset[1] : (isActiveNode ? 0.86 : baseOffset[1] * 0.45);
+          const targetOffsetZ = baseOffset[2];
+
+          sprite.position.x = THREE.MathUtils.lerp(sprite.position.x, targetOffsetX, 0.12);
+          sprite.position.y = THREE.MathUtils.lerp(sprite.position.y, targetOffsetY, 0.12);
+          sprite.position.z = THREE.MathUtils.lerp(sprite.position.z, targetOffsetZ, 0.12);
         }
       }
     }
@@ -520,6 +609,130 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
     spark: new THREE.OctahedronGeometry(1, 0),
   }), []);
 
+  const badgePlaneGeom = useMemo(() => new THREE.PlaneGeometry(1, 1), []);
+
+  // Multi-channel materials: Pure Red (R=1) for Neurons/Lines in Mask Pass, Pure White on Screen
+  const neuronMeshMat = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uIsMask: maskModeUniform,
+      },
+      vertexShader: `
+        void main() {
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float uIsMask;
+        void main() {
+          if (uIsMask > 0.5) {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+          } else {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+        }
+      `,
+      toneMapped: false,
+    });
+  }, []);
+
+  const lineMat = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uIsMask: maskModeUniform,
+      },
+      vertexShader: `
+        void main() {
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float uIsMask;
+        void main() {
+          if (uIsMask > 0.5) {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 0.9);
+          } else {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 0.65);
+          }
+        }
+      `,
+      transparent: true,
+      depthWrite: false,
+      toneMapped: false,
+    });
+  }, []);
+
+  const sparkMat = useMemo(() => {
+    return new THREE.ShaderMaterial({
+      uniforms: {
+        uIsMask: maskModeUniform,
+      },
+      vertexShader: `
+        void main() {
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform float uIsMask;
+        void main() {
+          if (uIsMask > 0.5) {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+          } else {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+          }
+        }
+      `,
+      toneMapped: false,
+    });
+  }, []);
+
+  // Multi-channel badge materials: Green (G=1) for Card Pill, Blue (B=1) for Text in Mask Pass
+  const badgeMaterials = useMemo(() => {
+    return badgeTextures.map(({ displayTexture, maskTexture }) => {
+      return new THREE.ShaderMaterial({
+        uniforms: {
+          uDisplayMap: { value: displayTexture },
+          uMaskMap: { value: maskTexture },
+          uIsMask: maskModeUniform,
+        },
+        vertexShader: `
+          varying vec2 vUv;
+          void main() {
+            vUv = uv;
+            vec4 mvPosition = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+            vec2 scale = vec2(
+              length(vec3(modelMatrix[0].x, modelMatrix[0].y, modelMatrix[0].z)),
+              length(vec3(modelMatrix[1].x, modelMatrix[1].y, modelMatrix[1].z))
+            );
+            mvPosition.xy += position.xy * scale;
+            gl_Position = projectionMatrix * mvPosition;
+          }
+        `,
+        fragmentShader: `
+          uniform sampler2D uDisplayMap;
+          uniform sampler2D uMaskMap;
+          uniform float uIsMask;
+          varying vec2 vUv;
+          void main() {
+            if (uIsMask > 0.5) {
+              vec4 m = texture2D(uMaskMap, vUv);
+              if (m.a < 0.05) discard;
+              gl_FragColor = m;
+            } else {
+              vec4 d = texture2D(uDisplayMap, vUv);
+              if (d.a < 0.05) discard;
+              gl_FragColor = d;
+            }
+          }
+        `,
+        transparent: true,
+        depthTest: false,
+        depthWrite: false,
+        toneMapped: false,
+      });
+    });
+  }, [badgeTextures]);
+
   return (
     <group ref={groupRef}>
       {/* ── Solid White Abstract Neuron Nodes ── */}
@@ -537,43 +750,39 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
               }
             }}
           >
-            {/* Pure Solid Flat White Abstract Geometry */}
+            {/* Pure Solid Flat White Abstract Geometry (Layer 1 enabled) */}
             <mesh
               ref={(el) => (meshRefs.current[i] = el)}
               geometry={geom}
+              material={neuronMeshMat}
               scale={0.001}
               renderOrder={1}
-            >
-              <meshBasicMaterial
-                color="#ffffff"
-                toneMapped={false}
-              />
-            </mesh>
+              onUpdate={(self) => self.layers.enable(1)}
+            />
 
-            {/* Clean Solid White 3D Billboard Badge (depthTest=false so never occluded) */}
+            {/* Clean Solid White 3D Billboard Badge (Layer 1 enabled for parity inversion) */}
             {n.isMain && (
-              <sprite
-                ref={(el) => (spriteRefs.current[i] = el)}
-                position={[0, n.radius + 0.38, 0]}
-                scale={[1.15, 0.28, 1]}
-                renderOrder={10}
-              >
-                <spriteMaterial
-                  map={badgeTextures[i]}
-                  transparent
-                  opacity={0.94}
-                  depthTest={false}
-                  depthWrite={false}
-                  toneMapped={false}
-                />
-              </sprite>
+              <mesh
+                ref={(el) => (spriteRefs.current[i] = el as unknown as THREE.Sprite)}
+                geometry={badgePlaneGeom}
+                material={badgeMaterials[i]}
+                position={TAG_OFFSETS[n.storyIndex] || [0, n.radius + 0.38, 0.15]}
+                renderOrder={1}
+                onUpdate={(self) => self.layers.enable(1)}
+              />
             )}
           </group>
         );
       })}
 
-      {/* ── Solid White Axon Connection Lines ── */}
-      <lineSegments ref={linesRef} frustumCulled={false} renderOrder={1}>
+      {/* ── Solid White Axon Connection Lines (Layer 1 enabled) ── */}
+      <lineSegments
+        ref={linesRef}
+        material={lineMat}
+        frustumCulled={false}
+        renderOrder={1}
+        onUpdate={(self) => self.layers.enable(1)}
+      >
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
@@ -582,29 +791,19 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
             itemSize={3}
           />
         </bufferGeometry>
-        <lineBasicMaterial
-          color="#ffffff"
-          transparent
-          opacity={0.65}
-          depthWrite={false}
-          toneMapped={false}
-        />
       </lineSegments>
 
-      {/* ── Solid White Synaptic Action Potential Sparks ─────────────── */}
-      <group ref={sparkGroupRef}>
+      {/* ── Solid White Synaptic Action Potential Sparks (Layer 1 enabled) ── */}
+      <group ref={sparkGroupRef} onUpdate={(self) => self.traverse((c) => c.layers.enable(1))}>
         {sparks.map((spark, s) => (
           <mesh
             key={`spark-${s}`}
             geometry={geometries.spark}
+            material={sparkMat}
             scale={0.001}
             renderOrder={1}
-          >
-            <meshBasicMaterial
-              color="#ffffff"
-              toneMapped={false}
-            />
-          </mesh>
+            onUpdate={(self) => self.layers.enable(1)}
+          />
         ))}
       </group>
 
