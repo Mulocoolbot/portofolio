@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Menu, X, Sparkles, Terminal, ChevronDown } from 'lucide-react';
+import { Settings, Menu, X, Terminal, ChevronDown } from 'lucide-react';
 import { soundFX } from './SoundEffects';
-import { NEURON_STORY_DATA } from '../../data/neuronStoryData';
 
 interface NavbarProps {
   activeStep: number; // 0 = Overview (hidden), 1-9 = detail sections
@@ -203,8 +202,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep, onOp
                       transition={{ type: 'spring', damping: 25, stiffness: 350 }}
                     />
                   )}
-                  <span className="relative z-10 flex items-center gap-1.5">
-                    {item.highlight && <Sparkles className={`w-3 h-3 ${isActive ? 'text-white' : 'text-white/70'} animate-pulse`} />}
+                  <span className="relative z-10 flex items-center">
                     {item.label}
                   </span>
                 </button>
@@ -314,7 +312,6 @@ export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep, onOp
                       }`}
                     >
                       <span>{item.label}</span>
-                      {item.highlight && <Sparkles className="w-3.5 h-3.5 text-white" />}
                     </button>
                   );
                 })}
@@ -331,7 +328,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeStep, onNavigateStep, onOp
                   >
                     <span className="flex items-center gap-2">
                       <Settings className="w-4 h-4" />
-                      <span>Settings / Pengaturan</span>
+                      <span>Settings</span>
                     </span>
                   </button>
                 </div>

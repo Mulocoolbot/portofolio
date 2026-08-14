@@ -7,14 +7,19 @@ import { CustomCursor } from './components/ui/CustomCursor';
 import { BackgroundMusic } from './components/ui/BackgroundMusic';
 import { OverviewSettingsButton } from './components/ui/OverviewSettingsButton';
 import { SettingsModal } from './components/ui/SettingsModal';
+import { SplashScreen } from './components/ui/SplashScreen';
 import { soundFX } from './components/ui/SoundEffects';
 
 export const App: React.FC = () => {
+  // Splash Screen State
+  const [hasEntered, setHasEntered] = useState(false);
+
   // 0 = Overview (Hero with "WELCOME TO WORLD OF MULLO")
   // 1 to 9 = Story Nodes (1: Mullo, 2: About, 3: Org Exp, 4: Pro Exp, 5: Projects, 6: Skills, 7: Education, 8: Certs, 9: Contact)
   const [activeStep, setActiveStep] = useState<number>(0);
   const isThrottled = useRef(false);
   const touchStartY = useRef(0);
+  const touchStartInsideCard = useRef(false);
 
   // Settings & Audio State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -22,11 +27,19 @@ export const App: React.FC = () => {
   const [bgmVolume, setBgmVolume] = useState(20);
   const [bgmMuted, setBgmMuted] = useState(false);
   const [bgmLoop, setBgmLoop] = useState(true);
-  const [bgmTrackTitle, setBgmTrackTitle] = useState('Interstellar Main Theme - Hans Zimmer');
+  const bgmTrackTitle = 'Interstellar Main Theme - Hans Zimmer';
   const [soundFXEnabled, setSoundFXEnabled] = useState(true);
   const [cursorEnabled, setCursorEnabled] = useState(true);
 
   const totalSteps = 9;
+
+  // Handle Enter Experience from Splash Screen
+  const handleEnterExperience = useCallback(() => {
+    setHasEntered(true);
+    soundFX.unlockAudio();
+    soundFX.playOpenSaber();
+    setBgmPlaying(true);
+  }, []);
 
   // Preload and initialize all sound effects & start ambient idle hum
   useEffect(() => {
@@ -36,16 +49,17 @@ export const App: React.FC = () => {
       soundFX.startIdle();
     };
 
-    window.addEventListener('pointerdown', startAudioOnInteraction, { once: true });
-    window.addEventListener('keydown', startAudioOnInteraction, { once: true });
-    window.addEventListener('wheel', startAudioOnInteraction, { once: true });
-    window.addEventListener('touchstart', startAudioOnInteraction, { once: true });
+    const unlockEvents = ['pointerdown', 'click', 'touchstart', 'keydown', 'wheel'] as const;
+    unlockEvents.forEach((evt) => {
+      window.addEventListener(evt, startAudioOnInteraction, { once: true, passive: true });
+      document.addEventListener(evt, startAudioOnInteraction, { once: true, passive: true });
+    });
 
     return () => {
-      window.removeEventListener('pointerdown', startAudioOnInteraction);
-      window.removeEventListener('keydown', startAudioOnInteraction);
-      window.removeEventListener('wheel', startAudioOnInteraction);
-      window.removeEventListener('touchstart', startAudioOnInteraction);
+      unlockEvents.forEach((evt) => {
+        window.removeEventListener(evt, startAudioOnInteraction);
+        document.removeEventListener(evt, startAudioOnInteraction);
+      });
     };
   }, []);
 
@@ -108,18 +122,16 @@ export const App: React.FC = () => {
   // Global Wheel, Touch, and Keyboard Listeners for Synaptic 3D Navigation
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // If settings modal is open, don't trigger 3D flight
-      if (isSettingsOpen) return;
+      // If splash screen is visible or settings modal is open, don't trigger 3D flight
+      if (!hasEntered || isSettingsOpen) return;
 
-      // Ignore wheel if hovering inside a scrollable modal/card that is not at boundaries
+      // STRICT DETAIL CARD SCROLL ISOLATION:
+      // If cursor is inside any detail card or scrollable modal, do NOT advance website steps,
+      // even if the user scrolls all the way to the top or bottom of the card!
+      // Steps will ONLY change if the user scrolls on the background/outside the detail card.
       const target = e.target as HTMLElement;
-      if (target && target.closest('.custom-scrollbar')) {
-        const scrollElem = target.closest('.custom-scrollbar') as HTMLElement;
-        const isAtBottom = scrollElem.scrollTop + scrollElem.clientHeight >= scrollElem.scrollHeight - 5;
-        const isAtTop = scrollElem.scrollTop <= 5;
-        if ((e.deltaY > 0 && !isAtBottom) || (e.deltaY < 0 && !isAtTop)) {
-          return;
-        }
+      if (target && (target.closest('[data-detail-card="true"]') || target.closest('.custom-scrollbar'))) {
+        return;
       }
 
       if (Math.abs(e.deltaY) > 18) {
@@ -132,7 +144,7 @@ export const App: React.FC = () => {
     };
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (isSettingsOpen) return;
+      if (!hasEntered || isSettingsOpen) return;
 
       if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
         e.preventDefault();
@@ -149,11 +161,18 @@ export const App: React.FC = () => {
     const handleTouchStart = (e: TouchEvent) => {
       if (e.touches.length > 0) {
         touchStartY.current = e.touches[0].clientY;
+        const target = e.target as HTMLElement;
+        touchStartInsideCard.current = Boolean(
+          target && (target.closest('[data-detail-card="true"]') || target.closest('.custom-scrollbar'))
+        );
       }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
-      if (isSettingsOpen) return;
+      if (!hasEntered || isSettingsOpen) return;
+      // If swipe originated inside detail card, do not advance 3D steps
+      if (touchStartInsideCard.current) return;
+
       if (e.changedTouches.length > 0) {
         const deltaY = touchStartY.current - e.changedTouches[0].clientY;
         if (Math.abs(deltaY) > 40) {
@@ -177,7 +196,7 @@ export const App: React.FC = () => {
       window.removeEventListener('touchstart', handleTouchStart);
       window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [advanceStep, isSettingsOpen, navigateToStep]);
+  }, [advanceStep, hasEntered, isSettingsOpen, navigateToStep]);
 
   // Audio & Settings Control Callbacks
   const toggleBgm = useCallback(() => {
@@ -210,6 +229,7 @@ export const App: React.FC = () => {
       {/* Interactive 3D Canvas Background with Camera Flight */}
       <Background3DCanvas
         activeStep={activeStep}
+        hasEntered={hasEntered}
         onSelectNode={(storyIndex) => navigateToStep(storyIndex + 1)}
       />
 
@@ -217,40 +237,54 @@ export const App: React.FC = () => {
       <CustomCursor enabled={cursorEnabled} />
 
       {/* Overview Top-Right Settings Button (activeStep === 0) */}
-      <OverviewSettingsButton
-        activeStep={activeStep}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-      />
+      {hasEntered && (
+        <OverviewSettingsButton
+          activeStep={activeStep}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
+      )}
 
       {/* Top Floating Glassmorphism Navbar — hidden on Overview, visible on Detail (activeStep >= 1) */}
-      <Navbar
-        activeStep={activeStep}
-        onNavigateStep={navigateToStep}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-      />
+      {hasEntered && (
+        <Navbar
+          activeStep={activeStep}
+          onNavigateStep={navigateToStep}
+          onOpenSettings={() => setIsSettingsOpen(true)}
+        />
+      )}
 
       {/* ── Step 0: Hero Section with Typewriter & Inversion ────────────────── */}
-      <HeroSection
-        activeStep={activeStep}
-        onStartExplore={() => navigateToStep(1)}
-      />
+      {hasEntered && (
+        <HeroSection
+          activeStep={activeStep}
+        />
+      )}
 
       {/* ── Step 1 to 9: Interactive Neuron Info Panel & HUD ───────────────── */}
-      <NeuronInfoPanel
-        activeStep={activeStep}
-        onNavigateStep={(step) => navigateToStep(step)}
-        onCloseToOverview={() => navigateToStep(0)}
-      />
+      {hasEntered && (
+        <NeuronInfoPanel
+          activeStep={activeStep}
+          onNavigateStep={(step) => navigateToStep(step)}
+          onCloseToOverview={() => navigateToStep(0)}
+        />
+      )}
 
       {/* ── Background Music Controller (BGM Watermark & Audio Engine) ── */}
-      <BackgroundMusic
-        isPlaying={bgmPlaying}
-        volume={bgmVolume}
-        isMuted={bgmMuted}
-        loopActive={bgmLoop}
-        trackTitle={bgmTrackTitle}
-        onTrackTitleLoaded={setBgmTrackTitle}
-        setIsPlayingState={setBgmPlaying}
+      {hasEntered && (
+        <BackgroundMusic
+          isPlaying={bgmPlaying}
+          volume={bgmVolume}
+          isMuted={bgmMuted}
+          loopActive={bgmLoop}
+          trackTitle={bgmTrackTitle}
+          setIsPlayingState={setBgmPlaying}
+        />
+      )}
+
+      {/* ── Initial Neural Experience Splash Screen ───────────────────────── */}
+      <SplashScreen
+        isVisible={!hasEntered}
+        onEnter={handleEnterExperience}
       />
 
       {/* ── System & Audio Settings Modal ──────────────────────────────────── */}

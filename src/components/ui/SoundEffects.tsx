@@ -24,7 +24,7 @@ class SoundFX {
     // Initialized on first user interaction or when needed
   }
 
-  private initCtx() {
+  public initCtx() {
     if (!this.ctx && typeof window !== 'undefined') {
       const AudioCtx =
         window.AudioContext ||
@@ -32,6 +32,19 @@ class SoundFX {
       if (AudioCtx) {
         this.ctx = new AudioCtx();
       }
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+  }
+
+  public unlockAudio() {
+    this.initCtx();
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
+    if (this.enabled) {
+      this.startIdle();
     }
   }
 
@@ -131,7 +144,7 @@ class SoundFX {
 
         source.buffer = this.idleBuffer;
         source.loop = true;
-        gain.gain.setValueAtTime(0.12, this.ctx.currentTime); // 12% ambient volume
+        gain.gain.setValueAtTime(0.08, this.ctx.currentTime); // 8% ambient volume
 
         source.connect(gain);
         gain.connect(this.ctx.destination);
@@ -145,7 +158,7 @@ class SoundFX {
         if (!this.idleAudioEl) {
           this.idleAudioEl = new Audio('/sounds/idle.wav');
           this.idleAudioEl.loop = true;
-          this.idleAudioEl.volume = 0.12;
+          this.idleAudioEl.volume = 0.08;
         }
         this.idleAudioEl.play().then(() => {
           this.isIdlePlaying = true;

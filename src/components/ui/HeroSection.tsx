@@ -2,10 +2,9 @@ import React from 'react';
 
 interface HeroSectionProps {
   activeStep: number;
-  onStartExplore: () => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ activeStep, onStartExplore }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ activeStep }) => {
   if (activeStep !== 0) return null;
 
   return (
@@ -16,7 +15,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ activeStep, onStartExp
       {/* Screen-reader accessible title for SEO */}
       <div className="sr-only">
         <p>WELCOME TO WORLD OF</p>
-        <h1>MULLO - Creative Technologist &amp; 3D Web Architect</h1>
+        <h1>Ahmad Mulia Saputra (Mullo) — Informatics Student | Web Developer | UI/UX Enthusiast</h1>
       </div>
     </section>
   );

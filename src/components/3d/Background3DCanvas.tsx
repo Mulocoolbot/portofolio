@@ -70,10 +70,15 @@ const CameraFlightController: React.FC<CameraFlightControllerProps> = ({ activeS
 
 interface Background3DCanvasProps {
   activeStep: number;
+  hasEntered?: boolean;
   onSelectNode?: (storyIndex: number) => void;
 }
 
-export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeStep, onSelectNode }) => {
+export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({
+  activeStep,
+  hasEntered = false,
+  onSelectNode,
+}) => {
   const mouseRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0, vx: 0, vy: 0 });
   const neuronDataRef = useRef<NeuronInversionData>({
     positions: [],
@@ -304,21 +309,25 @@ export const Background3DCanvas: React.FC<Background3DCanvasProps> = ({ activeSt
           {/* 3D Camera Flight Interpolator */}
           <CameraFlightController activeStep={activeStep} mouseRef={mouseRef} />
 
-          {/* Solid White 3D Neural Network */}
-          <NeuronNetwork
-            activeStep={activeStep}
-            mouseRef={mouseRef}
-            neuronDataRef={neuronDataRef}
-            onSelectNode={onSelectNode}
-            dragRef={dragRef}
-            hoveredNeuronRef={hoveredNeuronRef}
-          />
+          {/* Solid White 3D Neural Network - Only visible after entering experience */}
+          {hasEntered && (
+            <NeuronNetwork
+              activeStep={activeStep}
+              mouseRef={mouseRef}
+              neuronDataRef={neuronDataRef}
+              onSelectNode={onSelectNode}
+              dragRef={dragRef}
+              hoveredNeuronRef={hoveredNeuronRef}
+            />
+          )}
 
-          {/* Dynamic Color Inversion Hero Text: "WELCOME TO WORLD OF" & "MULLO" */}
-          <StencilInversionHeroText
-            activeStep={activeStep}
-            position={[0, -0.9, 0.4]}
-          />
+          {/* Dynamic Color Inversion Hero Text: "WELCOME TO WORLD OF" & "MULLO" - Only visible after entering experience */}
+          {hasEntered && (
+            <StencilInversionHeroText
+              activeStep={activeStep}
+              position={[0, -0.9, 0.4]}
+            />
+          )}
         </Suspense>
       </Canvas>
     </div>

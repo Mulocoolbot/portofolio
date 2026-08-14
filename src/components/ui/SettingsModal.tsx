@@ -9,7 +9,7 @@ import {
   Play,
   Pause,
   Repeat,
-  Sparkles,
+  Music,
   ExternalLink,
   MousePointer,
   Radio,
@@ -148,7 +148,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="rounded-xl bg-black/40 border border-white/10 p-2.5 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="w-6 h-6 rounded-lg bg-cyan-500/20 flex items-center justify-center shrink-0">
-                      <Sparkles className="w-3 h-3 text-cyan-400" />
+                      <Music className="w-3 h-3 text-cyan-400" />
                     </div>
                     <div className="min-w-0">
                       <div className="text-[11px] font-bold text-white truncate">

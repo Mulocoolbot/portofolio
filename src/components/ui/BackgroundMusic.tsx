@@ -12,7 +12,6 @@ interface BackgroundMusicProps {
   isMuted: boolean;
   loopActive: boolean;
   trackTitle: string;
-  onTrackTitleLoaded?: (title: string) => void;
   setIsPlayingState: (playing: boolean) => void;
 }
 
@@ -25,7 +24,7 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
   setIsPlayingState,
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [hasInteracted, setHasInteracted] = useState(false);
+  const isUnlockedRef = useRef(false);
 
   // Initialize and mount Audio element
   useEffect(() => {
@@ -46,16 +45,58 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
 
     audio.addEventListener('ended', handleEnded);
 
-    // Attempt initial autoplay
+    // Function to safely attempt playback and unlock audio
+    const attemptPlay = () => {
+      if (!audioRef.current || !isPlaying) return;
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            isUnlockedRef.current = true;
+            setIsPlayingState(true);
+            cleanupGestureListeners();
+          })
+          .catch(() => {
+            // Autoplay policy prevented immediate playback; listeners remain active
+          });
+      }
+    };
+
+    // Attempt instant autoplay on component mount
     if (isPlaying) {
-      audio.play().then(() => {
-        setIsPlayingState(true);
-      }).catch(() => {
-        // Autoplay blocked until gesture
-      });
+      attemptPlay();
     }
 
+    // Gesture unlock listeners across window and document
+    const gestureEvents = [
+      'pointerdown',
+      'click',
+      'touchstart',
+      'touchend',
+      'keydown',
+      'wheel',
+      'scroll',
+    ] as const;
+
+    const handleUserGesture = () => {
+      if (isUnlockedRef.current) return;
+      attemptPlay();
+    };
+
+    const cleanupGestureListeners = () => {
+      gestureEvents.forEach((evt) => {
+        window.removeEventListener(evt, handleUserGesture);
+        document.removeEventListener(evt, handleUserGesture);
+      });
+    };
+
+    gestureEvents.forEach((evt) => {
+      window.addEventListener(evt, handleUserGesture, { passive: true });
+      document.addEventListener(evt, handleUserGesture, { passive: true });
+    });
+
     return () => {
+      cleanupGestureListeners();
       audio.removeEventListener('ended', handleEnded);
       audio.pause();
       audio.src = '';
@@ -82,7 +123,9 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
     if (!audioRef.current) return;
     if (isPlaying) {
       if (audioRef.current.paused) {
-        audioRef.current.play().catch(() => {});
+        audioRef.current.play().then(() => {
+          isUnlockedRef.current = true;
+        }).catch(() => {});
       }
     } else {
       if (!audioRef.current.paused) {
@@ -90,34 +133,6 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
       }
     }
   }, [isPlaying]);
-
-  // Unlock and play audio on first user interaction if blocked initially
-  useEffect(() => {
-    const handleFirstGesture = () => {
-      if (hasInteracted) return;
-      setHasInteracted(true);
-
-      if (audioRef.current && isPlaying && audioRef.current.paused) {
-        audioRef.current.play().then(() => {
-          setIsPlayingState(true);
-        }).catch(() => {});
-      }
-    };
-
-    window.addEventListener('pointerdown', handleFirstGesture, { once: true });
-    window.addEventListener('pointermove', handleFirstGesture, { once: true });
-    window.addEventListener('keydown', handleFirstGesture, { once: true });
-    window.addEventListener('touchstart', handleFirstGesture, { once: true });
-    window.addEventListener('wheel', handleFirstGesture, { once: true });
-
-    return () => {
-      window.removeEventListener('pointerdown', handleFirstGesture);
-      window.removeEventListener('pointermove', handleFirstGesture);
-      window.removeEventListener('keydown', handleFirstGesture);
-      window.removeEventListener('touchstart', handleFirstGesture);
-      window.removeEventListener('wheel', handleFirstGesture);
-    };
-  }, [hasInteracted, isPlaying, setIsPlayingState]);
 
   const displayTitle = trackTitle || 'Interstellar Main Theme - Extra Extended - Hans Zimmer';
 
@@ -136,7 +151,7 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
           rel="noreferrer"
           onClick={() => soundFX.playClick()}
           onMouseEnter={() => soundFX.playHover()}
-          title="Klik untuk membuka video soundtrack di YouTube"
+          title="Click to open soundtrack on YouTube"
           className="marquee-container w-[230px] xs:w-[260px] sm:w-[290px] h-[40px] glass-panel rounded-2xl px-3 border border-white/15 hover:border-cyan-400/50 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2.5 bg-black/80 transition-all group cursor-pointer active:scale-95"
         >
           {/* Left: Animated Sound Equalizer Wave Bars */}
