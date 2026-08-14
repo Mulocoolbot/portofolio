@@ -4,7 +4,7 @@ import { ExternalLink, Music } from 'lucide-react';
 import { soundFX } from './SoundEffects';
 
 const YOUTUBE_VIDEO_URL = 'https://youtu.be/UDVtMYqUAyw?si=XTptJlIQVoJx4cg1';
-const BGM_AUDIO_SRC = '/sounds/bgm.mp3';
+const BGM_AUDIO_SRC = `${(import.meta.env.BASE_URL || '/').endsWith('/') ? import.meta.env.BASE_URL || '/' : `${import.meta.env.BASE_URL}/`}sounds/bgm.mp3`;
 
 interface BackgroundMusicProps {
   isPlaying: boolean;

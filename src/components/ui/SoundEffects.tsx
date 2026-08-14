@@ -67,8 +67,12 @@ class SoundFX {
     this.isPreloaded = true;
     this.initCtx();
 
+    const basePath = (import.meta.env.BASE_URL || '/').endsWith('/')
+      ? import.meta.env.BASE_URL || '/'
+      : `${import.meta.env.BASE_URL}/`;
+
     // 1. Open Saber (Forward & Reversed)
-    this.loadBuffer('/sounds/open_saber.wav', (buffer) => {
+    this.loadBuffer(`${basePath}sounds/open_saber.wav`, (buffer) => {
       this.openSaberBuffer = buffer;
       if (this.ctx) {
         // Create reversed audio buffer for transition from neuron back to overview
@@ -89,17 +93,17 @@ class SoundFX {
     });
 
     // 2. Neuron Transition (Neuron to Neuron)
-    this.loadBuffer('/sounds/neurontransition.wav', (buffer) => {
+    this.loadBuffer(`${basePath}sounds/neurontransition.wav`, (buffer) => {
       this.neuronTransitionBuffer = buffer;
     });
 
     // 3. Neuron Swing (Interaction / Rotation)
-    this.loadBuffer('/sounds/neuronswing.wav', (buffer) => {
+    this.loadBuffer(`${basePath}sounds/neuronswing.wav`, (buffer) => {
       this.neuronSwingBuffer = buffer;
     });
 
     // 4. Idle Ambient Hum (Continuous Background Loop)
-    this.loadBuffer('/sounds/idle.wav', (buffer) => {
+    this.loadBuffer(`${basePath}sounds/idle.wav`, (buffer) => {
       this.idleBuffer = buffer;
       if (this.enabled && !this.isIdlePlaying) {
         this.startIdle();
