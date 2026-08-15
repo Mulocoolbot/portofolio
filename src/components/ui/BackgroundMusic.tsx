@@ -12,6 +12,7 @@ interface BackgroundMusicProps {
   isMuted: boolean;
   loopActive: boolean;
   trackTitle: string;
+  activeStep?: number;
   setIsPlayingState: (playing: boolean) => void;
 }
 
@@ -21,6 +22,7 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
   isMuted,
   loopActive,
   trackTitle,
+  activeStep = 0,
   setIsPlayingState,
 }) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -138,12 +140,12 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
 
   return (
     <>
-      {/* Constant Shape Watermark Pill with Continuous Running Marquee Title (Bottom Left) */}
+      {/* Background Music Widget (Bottom Left) */}
       <motion.div
         initial={{ opacity: 0, y: 20, scale: 0.9 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: 0.6, duration: 0.5 }}
-        className="fixed bottom-5 left-5 z-40 pointer-events-auto font-mono select-none"
+        className="fixed bottom-4 sm:bottom-5 left-4 sm:left-5 z-40 pointer-events-auto font-mono select-none"
       >
         <a
           href={YOUTUBE_VIDEO_URL}
@@ -152,9 +154,9 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
           onClick={() => soundFX.playClick()}
           onMouseEnter={() => soundFX.playHover()}
           title="Click to open soundtrack on YouTube"
-          className="marquee-container w-[230px] xs:w-[260px] sm:w-[290px] h-[40px] glass-panel rounded-2xl px-3 border border-white/15 hover:border-cyan-400/50 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.7)] flex items-center justify-between gap-2.5 bg-black/80 transition-all group cursor-pointer active:scale-95"
+          className="glass-panel border border-white/15 hover:border-cyan-400/50 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.7)] flex items-center bg-black/80 transition-all duration-300 group cursor-pointer active:scale-95 w-10 h-10 rounded-full justify-center p-0 lg:w-[280px] xl:w-[290px] lg:h-[40px] lg:rounded-2xl lg:px-3 lg:justify-between"
         >
-          {/* Left: Animated Sound Equalizer Wave Bars */}
+          {/* Left: Animated Sound Equalizer Wave Bars & Music Icon */}
           <div className="flex items-center gap-2 shrink-0">
             <div className="flex items-end gap-0.5 h-4 w-4 justify-center shrink-0">
               <span
@@ -178,11 +180,11 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
                 }`}
               />
             </div>
-            <Music className="w-3 h-3 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
+            <Music className="w-3.5 h-3.5 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
           </div>
 
-          {/* Center: Running / Marquee Text (Right to Left) */}
-          <div className="relative flex-1 overflow-hidden h-5 flex items-center">
+          {/* Center: Running / Marquee Text (Hidden on mobile & tablet, visible on desktop) */}
+          <div className="relative flex-1 overflow-hidden h-5 items-center hidden lg:flex">
             {/* Left & Right subtle gradient masks for marquee smoothness */}
             <div className="absolute left-0 top-0 bottom-0 w-3 bg-gradient-to-r from-black/80 to-transparent z-10 pointer-events-none" />
             <div className="absolute right-0 top-0 bottom-0 w-3 bg-gradient-to-l from-black/80 to-transparent z-10 pointer-events-none" />
@@ -195,8 +197,8 @@ export const BackgroundMusic: React.FC<BackgroundMusicProps> = ({
             </div>
           </div>
 
-          {/* Right: External Link Indicator */}
-          <div className="shrink-0 flex items-center pl-0.5">
+          {/* Right: External Link Indicator (Hidden on mobile & tablet, visible on desktop) */}
+          <div className="shrink-0 items-center pl-0.5 hidden lg:flex">
             <ExternalLink className="w-3.5 h-3.5 text-white/40 group-hover:text-cyan-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>
         </a>

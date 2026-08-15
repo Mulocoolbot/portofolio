@@ -66,7 +66,11 @@ export const StencilInversionHeroText: React.FC<StencilInversionHeroTextProps> =
   const meshRef = useRef<THREE.Mesh>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
 
-  const { gl, scene, camera, size } = useThree();
+  const { gl, scene, camera, size, viewport } = useThree();
+
+  const aspect = size.width / Math.max(1, size.height);
+  const isMobile = aspect < 0.62 || size.width < 640;
+  const isTablet = !isMobile && (aspect < 1.15 || size.width <= 1024);
 
   const fullSubtitle = "WELCOME TO WORLD OF";
   const fullTitle = "MULLO";
@@ -124,7 +128,7 @@ export const StencilInversionHeroText: React.FC<StencilInversionHeroTextProps> =
     return { textCanvas: c, textTexture: tex };
   }, []);
 
-  // Render enlarged text onto canvas texture whenever typed text updates
+  // Render enlarged text onto canvas texture whenever typed text or screen mode updates
   useEffect(() => {
     const ctx = textCanvas.getContext('2d');
     if (!ctx) return;
@@ -134,25 +138,58 @@ export const StencilInversionHeroText: React.FC<StencilInversionHeroTextProps> =
 
     ctx.clearRect(0, 0, w, h);
 
-    // Subtitle (Enlarged and bold)
-    const subText = typedSubtitle + (!isSubtitleDone ? "_" : "");
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '700 56px "JetBrains Mono", monospace, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.letterSpacing = '18px';
-    ctx.fillText(subText, w / 2, 260);
+    if (isMobile) {
+      // Mobile Viewport Typography (Centered inside the open oval ring, guaranteed no clipping, no letter overlap)
+      const subText = typedSubtitle + (!isSubtitleDone ? "_" : "");
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 42px "JetBrains Mono", monospace, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '4px';
+      ctx.fillText(subText, w / 2, 280);
 
-    // Main Title "MULLO" (Grand, bold, enlarged)
-    const titleText = typedTitle + (isSubtitleDone && !isTitleDone ? "_" : "");
-    ctx.font = '900 320px "Outfit", system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.letterSpacing = '-4px';
-    ctx.fillText(titleText, w / 2, 590);
+      const titleText = typedTitle + (isSubtitleDone && !isTitleDone ? "_" : "");
+      ctx.font = '900 240px "Outfit", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '3px';
+      ctx.fillText(titleText, w / 2, 620);
+    } else if (isTablet) {
+      // iPad / Tablet Viewport Typography (Centered inside the open constellation ring, guaranteed no clipping)
+      const subText = typedSubtitle + (!isSubtitleDone ? "_" : "");
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 44px "JetBrains Mono", monospace, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '6px';
+      ctx.fillText(subText, w / 2, 280);
+
+      const titleText = typedTitle + (isSubtitleDone && !isTitleDone ? "_" : "");
+      ctx.font = '900 260px "Outfit", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '4px';
+      ctx.fillText(titleText, w / 2, 620);
+    } else {
+      // Desktop Viewport Typography
+      const subText = typedSubtitle + (!isSubtitleDone ? "_" : "");
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '700 48px "JetBrains Mono", monospace, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '10px';
+      ctx.fillText(subText, w / 2, 280);
+
+      const titleText = typedTitle + (isSubtitleDone && !isTitleDone ? "_" : "");
+      ctx.font = '900 290px "Outfit", system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.letterSpacing = '6px';
+      ctx.fillText(titleText, w / 2, 620);
+    }
 
     textTexture.needsUpdate = true;
-  }, [typedSubtitle, typedTitle, isSubtitleDone, isTitleDone, textCanvas, textTexture]);
+  }, [typedSubtitle, typedTitle, isSubtitleDone, isTitleDone, isMobile, isTablet, textCanvas, textTexture]);
 
   // Dedicated Render Target for capturing exact 3D neuron silhouette
   const maskRenderTarget = useMemo(() => {
@@ -219,12 +256,21 @@ export const StencilInversionHeroText: React.FC<StencilInversionHeroTextProps> =
       // Smooth hide when entering story steps (activeStep >= 1)
       const targetScale = activeStep === 0 ? 1.0 : 0.001;
       groupRef.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.12);
+
+      // Responsive vertical positioning centered in the open constellation
+      const targetPosY = isMobile ? 0.08 : isTablet ? 0.05 : -0.05;
+      groupRef.current.position.y = THREE.MathUtils.lerp(groupRef.current.position.y, targetPosY, 0.10);
     }
   });
 
-  // Enlarged plane dimensions to accommodate larger text
-  const planeWidth = 8.2;
-  const planeHeight = 4.1;
+  // Responsive 3D plane dimensions adapted to viewport width
+  const planeWidth = isMobile
+    ? Math.min(2.30, viewport.width * 0.72)
+    : isTablet
+    ? Math.min(3.20, viewport.width * 0.65)
+    : Math.min(5.40, viewport.width * 0.55);
+
+  const planeHeight = planeWidth * (isMobile ? 0.55 : isTablet ? 0.52 : 0.48);
 
   return (
     <group ref={groupRef} position={position}>

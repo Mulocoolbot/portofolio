@@ -1,7 +1,7 @@
 import React, { Suspense, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { NeuronNetwork, NEURON_SPATIAL_ANCHORS, NeuronInversionData } from './NeuronNetwork';
+import { NeuronNetwork, NEURON_SPATIAL_ANCHORS, NeuronInversionData, getSpatialAnchor } from './NeuronNetwork';
 import { StencilInversionHeroText } from './HeroTextInversion3D';
 import { Starfield } from './Starfield';
 import { CosmicEvents } from './CosmicEvents';
@@ -13,7 +13,7 @@ interface CameraFlightControllerProps {
 }
 
 const CameraFlightController: React.FC<CameraFlightControllerProps> = ({ activeStep, mouseRef }) => {
-  const { camera } = useThree();
+  const { camera, viewport } = useThree();
 
   const currentLookAt = useRef(new THREE.Vector3(0, 0, 0));
   const targetCamPos = useMemo(() => new THREE.Vector3(0, 0, 7.5), []);
@@ -26,22 +26,29 @@ const CameraFlightController: React.FC<CameraFlightControllerProps> = ({ activeS
     mouse.x = THREE.MathUtils.lerp(mouse.x, mouse.targetX, 0.08);
     mouse.y = THREE.MathUtils.lerp(mouse.y, mouse.targetY, 0.08);
 
+    const aspect = viewport.aspect;
+    const isMobile = aspect < 0.62 || (typeof window !== 'undefined' && window.innerWidth < 640);
+    const isTablet = !isMobile && (aspect < 1.15 || (typeof window !== 'undefined' && window.innerWidth <= 1024));
+    const isDesktop = !isMobile && !isTablet;
+
     if (activeStep === 0) {
       // ── Step 0: Overview of the entire Neural Universe ──────────────────
-      const parallaxX = mouse.x * 0.35;
-      const parallaxY = mouse.y * 0.28;
+      const baseCamZ = isMobile ? 8.6 : isTablet ? 8.1 : 7.6;
+      const baseCamY = isMobile ? -0.08 : isTablet ? -0.04 : 0.0;
 
-      targetCamPos.set(parallaxX, parallaxY, 7.5);
-      targetLookAt.set(parallaxX * 0.2, parallaxY * 0.2, 0);
+      const parallaxX = mouse.x * (isMobile ? 0.16 : isTablet ? 0.24 : 0.35);
+      const parallaxY = mouse.y * (isMobile ? 0.14 : isTablet ? 0.20 : 0.28);
+
+      targetCamPos.set(parallaxX, baseCamY + parallaxY, baseCamZ);
+      targetLookAt.set(parallaxX * 0.15, baseCamY + parallaxY * 0.15, 0);
     } else {
       // ── Step 1 to 9: Frame 3D Neuron Node on the LEFT (opposite the Card on Right)
       const storyIdx = activeStep - 1;
-      const anchor = NEURON_SPATIAL_ANCHORS[storyIdx] || [0, 0, 0];
+      const anchor = getSpatialAnchor(storyIdx, isMobile, isTablet);
 
-      const isDesktop = window.innerWidth > 768;
-      const cameraOffsetX = isDesktop ? 0.65 : 0.0;
-      const cameraOffsetY = isDesktop ? 0.0 : 0.50;
-      const lookAtOffsetX = isDesktop ? 0.65 : 0.0;
+      const cameraOffsetX = isDesktop ? 0.65 : isTablet ? 0.58 : 0.0;
+      const cameraOffsetY = isDesktop ? 0.0 : isTablet ? 0.0 : 0.58;
+      const lookAtOffsetX = isDesktop ? 0.65 : isTablet ? 0.58 : 0.0;
 
       const parallaxX = mouse.x * 0.10;
       const parallaxY = mouse.y * 0.08;
@@ -49,12 +56,12 @@ const CameraFlightController: React.FC<CameraFlightControllerProps> = ({ activeS
       targetCamPos.set(
         anchor[0] + cameraOffsetX + parallaxX,
         anchor[1] + cameraOffsetY + parallaxY,
-        anchor[2] + (isDesktop ? 2.45 : 2.8)
+        anchor[2] + (isDesktop ? 2.45 : isTablet ? 2.50 : 2.55)
       );
 
       targetLookAt.set(
         anchor[0] + lookAtOffsetX,
-        anchor[1] + (isDesktop ? 0.0 : 0.08),
+        anchor[1] + (isMobile ? 0.08 : 0.0),
         anchor[2]
       );
     }

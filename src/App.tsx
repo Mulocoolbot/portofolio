@@ -6,6 +6,7 @@ import { NeuronInfoPanel } from './components/ui/NeuronInfoPanel';
 import { CustomCursor } from './components/ui/CustomCursor';
 import { BackgroundMusic } from './components/ui/BackgroundMusic';
 import { OverviewSettingsButton } from './components/ui/OverviewSettingsButton';
+import { OverviewStartButton } from './components/ui/OverviewStartButton';
 import { SettingsModal } from './components/ui/SettingsModal';
 import { SplashScreen } from './components/ui/SplashScreen';
 import { soundFX } from './components/ui/SoundEffects';
@@ -18,8 +19,6 @@ export const App: React.FC = () => {
   // 1 to 9 = Story Nodes (1: Mullo, 2: About, 3: Org Exp, 4: Pro Exp, 5: Projects, 6: Skills, 7: Education, 8: Certs, 9: Contact)
   const [activeStep, setActiveStep] = useState<number>(0);
   const isThrottled = useRef(false);
-  const touchStartY = useRef(0);
-  const touchStartInsideCard = useRef(false);
 
   // Settings & Audio State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -90,7 +89,6 @@ export const App: React.FC = () => {
     setActiveStep((prev) => {
       let next: number;
       if (direction === 1) {
-        // Return to Overview (0) automatically when scrolling past the last detail section
         if (prev >= totalSteps) {
           next = 0;
         } else {
@@ -101,13 +99,10 @@ export const App: React.FC = () => {
       }
 
       if (prev === 0 && next >= 1) {
-        // Overview -> Neuron: Open Saber Forward
         soundFX.playOpenSaber();
       } else if (prev >= 1 && next === 0) {
-        // Neuron -> Overview: Open Saber Reversed
         soundFX.playOpenSaberReversed();
       } else if (prev >= 1 && next >= 1 && prev !== next) {
-        // Neuron -> Neuron: Neuron Transition
         soundFX.playNeuronTransition();
       }
 
@@ -119,22 +114,20 @@ export const App: React.FC = () => {
     }, 550); // 550ms cooldown for smooth cinematic flight
   }, [totalSteps]);
 
-  // Global Wheel, Touch, and Keyboard Listeners for Synaptic 3D Navigation
+  // Global Wheel and Keyboard Listeners (Touch swipe is explicitly disabled to avoid accidental navigation)
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       // If splash screen is visible or settings modal is open, don't trigger 3D flight
       if (!hasEntered || isSettingsOpen) return;
 
       // STRICT DETAIL CARD SCROLL ISOLATION:
-      // If cursor is inside any detail card or scrollable modal, do NOT advance website steps,
-      // even if the user scrolls all the way to the top or bottom of the card!
-      // Steps will ONLY change if the user scrolls on the background/outside the detail card.
+      // If cursor is inside any detail card or scrollable modal, do NOT advance website steps.
       const target = e.target as HTMLElement;
       if (target && (target.closest('[data-detail-card="true"]') || target.closest('.custom-scrollbar'))) {
         return;
       }
 
-      if (Math.abs(e.deltaY) > 18) {
+      if (Math.abs(e.deltaY) > 24) {
         if (e.deltaY > 0) {
           advanceStep(1);
         } else {
@@ -146,7 +139,7 @@ export const App: React.FC = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!hasEntered || isSettingsOpen) return;
 
-      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown') {
         e.preventDefault();
         advanceStep(1);
       } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp') {
@@ -158,43 +151,12 @@ export const App: React.FC = () => {
       }
     };
 
-    const handleTouchStart = (e: TouchEvent) => {
-      if (e.touches.length > 0) {
-        touchStartY.current = e.touches[0].clientY;
-        const target = e.target as HTMLElement;
-        touchStartInsideCard.current = Boolean(
-          target && (target.closest('[data-detail-card="true"]') || target.closest('.custom-scrollbar'))
-        );
-      }
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (!hasEntered || isSettingsOpen) return;
-      // If swipe originated inside detail card, do not advance 3D steps
-      if (touchStartInsideCard.current) return;
-
-      if (e.changedTouches.length > 0) {
-        const deltaY = touchStartY.current - e.changedTouches[0].clientY;
-        if (Math.abs(deltaY) > 40) {
-          if (deltaY > 0) {
-            advanceStep(1); // Swipe Up -> Next
-          } else {
-            advanceStep(-1); // Swipe Down -> Prev
-          }
-        }
-      }
-    };
-
     window.addEventListener('wheel', handleWheel, { passive: true });
     window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('touchstart', handleTouchStart, { passive: true });
-    window.addEventListener('touchend', handleTouchEnd, { passive: true });
 
     return () => {
       window.removeEventListener('wheel', handleWheel);
       window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('touchstart', handleTouchStart);
-      window.removeEventListener('touchend', handleTouchEnd);
     };
   }, [advanceStep, hasEntered, isSettingsOpen, navigateToStep]);
 
@@ -244,6 +206,14 @@ export const App: React.FC = () => {
         />
       )}
 
+      {/* Overview Center Bottom Start Button (activeStep === 0) */}
+      {hasEntered && (
+        <OverviewStartButton
+          activeStep={activeStep}
+          onStart={() => navigateToStep(1)}
+        />
+      )}
+
       {/* Top Floating Glassmorphism Navbar — hidden on Overview, visible on Detail (activeStep >= 1) */}
       {hasEntered && (
         <Navbar
@@ -260,7 +230,7 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* ── Step 1 to 9: Interactive Neuron Info Panel & HUD ───────────────── */}
+      {/* ── Step 1 to 9: Interactive Neuron Info Panel & Bottom HUD ───────── */}
       {hasEntered && (
         <NeuronInfoPanel
           activeStep={activeStep}
@@ -277,6 +247,7 @@ export const App: React.FC = () => {
           isMuted={bgmMuted}
           loopActive={bgmLoop}
           trackTitle={bgmTrackTitle}
+          activeStep={activeStep}
           setIsPlayingState={setBgmPlaying}
         />
       )}
@@ -310,4 +281,3 @@ export const App: React.FC = () => {
 };
 
 export default App;
-

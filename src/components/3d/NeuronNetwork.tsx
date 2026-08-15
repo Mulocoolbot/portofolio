@@ -32,44 +32,134 @@ export interface NeuronInversionData {
   lines: THREE.Vector4[];
 }
 
-// 18 Structured Spatial Anchors with generous 3D clearance:
-// Nodes 0 to 8 correspond to the 9 Story Chapters
-export const NEURON_SPATIAL_ANCHORS: [number, number, number][] = [
-  // ── 9 Primary Interactive Story Nodes (Well-spaced layout) ───────────────
-  [0.0, -0.45, 0.3],    // 0: MULLO (Center-Low)
+// ── Structured Spatial Anchors for Responsive Layouts ──────────────────────
+// 1. Desktop Anchors (Wide panoramic constellation)
+export const DESKTOP_ANCHORS: [number, number, number][] = [
+  // ── 9 Primary Interactive Story Nodes ──
+  [0.0, -0.45, 0.3],    // 0: MULLO (Center)
   [-2.6, 1.5, 0.2],     // 1: ABOUT ME (Upper-Left)
   [2.6, 1.5, 0.1],      // 2: EXPERIENCE - ORGANIZATIONAL (Upper-Right)
   [3.0, 0.1, -0.1],     // 3: EXPERIENCE - PROFESSIONAL (Mid-Right)
   [2.1, -1.3, 0.2],     // 4: PROJECTS (Lower-Right)
-  [0.0, -1.85, 0.3],    // 5: SKILLS (Lower-Center Nadir, well below MULLO)
+  [0.0, -1.65, 0.3],    // 5: SKILLS (Bottom Nadir)
   [-2.3, -1.3, -0.1],   // 6: EDUCATION (Lower-Left)
   [-3.0, 0.1, 0.1],     // 7: CERTIFICATE (Mid-Left)
-  [0.0, 0.65, 0.7],     // 8: CONTACT (Center Zenith, well above MULLO)
+  [0.0, 0.85, 0.7],     // 8: CONTACT (Center Zenith)
 
-  // ── 9 Supporting Connective Satellites ──────────────────────────────────
-  [-3.8, 2.0, -0.5],    // 9: Outer Deep Left
-  [3.8, 1.9, -0.5],     // 10: Outer Deep Right
-  [0.0, 2.5, -0.3],     // 11: Top Zenith
-  [-3.6, -2.0, -0.3],   // 12: Bottom Outer Left
-  [3.6, -1.9, -0.3],    // 13: Bottom Outer Right
-  [0.0, -2.9, -0.4],    // 14: Bottom Nadir
-  [-1.6, 0.7, -1.2],    // 15: Deep Background Left
-  [1.6, 0.8, -1.2],     // 16: Deep Background Right
-  [0.0, 0.0, -1.4],     // 17: Deep Core
+  // ── 9 Supporting Connective Satellites ──
+  [-3.6, 1.8, -0.5],    // 9: Outer Deep Left
+  [3.6, 1.8, -0.5],     // 10: Outer Deep Right
+  [0.0, 2.2, -0.3],     // 11: Top Zenith
+  [-3.4, -1.8, -0.3],   // 12: Bottom Outer Left
+  [3.4, -1.8, -0.3],    // 13: Bottom Outer Right
+  [0.0, -2.2, -0.4],    // 14: Bottom Nadir
+  [-1.6, 0.7, -1.8],    // 15: Deep Background Left
+  [1.6, 0.8, -1.8],     // 16: Deep Background Right
+  [0.0, -2.4, -1.8],    // 17: Deep Bottom Background (Clear of central text!)
 ];
 
-// Tailored tag placement offsets to ensure 100% legibility and zero collision with other neurons
-const TAG_OFFSETS: [number, number, number][] = [
+// 2. iPad / Tablet Anchors (Open-Ring Constellation with Hollow Center)
+export const TABLET_ANCHORS: [number, number, number][] = [
+  // ── 9 Primary Interactive Story Nodes (Arranged in an open ring around central typography) ──
+  [0.0, -0.95, 0.3],    // 0: MULLO (Lower-Center)
+  [-1.60, 1.25, 0.2],   // 1: ABOUT ME (Upper-Left)
+  [1.60, 1.25, 0.1],    // 2: EXPERIENCE - ORGANIZATIONAL (Upper-Right)
+  [1.85, 0.35, -0.1],   // 3: EXPERIENCE - PROFESSIONAL (Mid-Right)
+  [1.45, -1.35, 0.2],   // 4: PROJECTS (Lower-Right)
+  [0.0, -1.85, 0.3],    // 5: SKILLS (Bottom Nadir)
+  [-1.45, -1.35, -0.1], // 6: EDUCATION (Lower-Left)
+  [-1.85, 0.35, 0.1],   // 7: CERTIFICATE (Mid-Left)
+  [0.0, 1.70, 0.6],     // 8: CONTACT (Top Zenith)
+
+  // ── 9 Supporting Connective Satellites (Perimeter & Deep Background) ──
+  [-1.95, 1.95, -0.8],  // 9: Outer Top Left
+  [1.95, 1.95, -0.8],   // 10: Outer Top Right
+  [0.0, 2.15, -0.6],    // 11: Zenith Outer
+  [-1.90, -1.95, -0.8], // 12: Outer Bottom Left
+  [1.90, -1.95, -0.8],  // 13: Outer Bottom Right
+  [0.0, -2.20, -0.6],   // 14: Nadir Outer
+  [-1.60, 0.0, -2.2],   // 15: Deep Left Background
+  [1.60, 0.0, -2.2],    // 16: Deep Right Background
+  [0.0, -2.30, -2.2],   // 17: Deep Bottom Background (Clear of central text!)
+];
+
+// 3. Mobile Anchors (Open-Ring Portrait Constellation with Hollow Center)
+export const MOBILE_ANCHORS: [number, number, number][] = [
+  // ── 9 Primary Interactive Story Nodes (Arranged in a balanced oval ring) ──
+  [0.0, -0.95, 0.3],    // 0: MULLO (Lower-Center)
+  [-0.85, 1.30, 0.2],   // 1: ABOUT ME (Upper-Left)
+  [0.85, 1.30, 0.1],    // 2: EXPERIENCE - ORGANIZATIONAL (Upper-Right)
+  [1.08, 0.45, -0.1],   // 3: EXPERIENCE - PROFESSIONAL (Mid-Upper Right)
+  [0.85, -1.35, 0.2],   // 4: PROJECTS (Lower-Right)
+  [0.0, -1.85, 0.3],    // 5: SKILLS (Bottom Nadir)
+  [-0.85, -1.35, -0.1], // 6: EDUCATION (Lower-Left)
+  [-1.08, 0.45, 0.1],   // 7: CERTIFICATE (Mid-Upper Left)
+  [0.0, 1.70, 0.5],     // 8: CONTACT (Top Zenith)
+
+  // ── 9 Supporting Connective Satellites (Perimeter & Deep Background) ──
+  [-1.00, 2.05, -0.8],  // 9: Outer Top Left
+  [1.00, 2.05, -0.8],   // 10: Outer Top Right
+  [0.0, 2.20, -0.6],    // 11: Top Outer
+  [-1.00, -2.05, -0.8], // 12: Outer Bottom Left
+  [1.00, -2.05, -0.8],  // 13: Outer Bottom Right
+  [0.0, -2.15, -0.6],   // 14: Bottom Outer
+  [-0.90, 0.0, -2.2],   // 15: Deep Left Background
+  [0.90, 0.0, -2.2],    // 16: Deep Right Background
+  [0.0, -2.30, -2.2],   // 17: Deep Bottom Background (Clear of central text!)
+];
+
+// Default spatial anchors reference for backwards compatibility
+export const NEURON_SPATIAL_ANCHORS: [number, number, number][] = DESKTOP_ANCHORS;
+
+export function getSpatialAnchors(isMobile: boolean, isTablet: boolean): [number, number, number][] {
+  if (isMobile) return MOBILE_ANCHORS;
+  if (isTablet) return TABLET_ANCHORS;
+  return DESKTOP_ANCHORS;
+}
+
+export function getSpatialAnchor(storyIndex: number, isMobile: boolean, isTablet: boolean): [number, number, number] {
+  const anchors = getSpatialAnchors(isMobile, isTablet);
+  return anchors[storyIndex] || [0, 0, 0];
+}
+
+// Tailored tag placement offsets for each device
+const DESKTOP_TAG_OFFSETS: [number, number, number][] = [
   [0.0, 0.42, 0.15],    // 0: MULLO (Above Node 0)
   [0.0, 0.45, 0.15],    // 1: ABOUT ME (Above Node 1)
   [0.0, 0.45, 0.15],    // 2: ORGANIZATIONAL (Above Node 2)
   [0.25, 0.40, 0.15],   // 3: PROFESSIONAL (Above-Right of Node 3)
   [0.20, -0.44, 0.15],  // 4: PROJECTS (Below-Right of Node 4)
-  [0.0, -0.45, 0.15],   // 5: SKILLS (Below Node 5 - clear of Node 0 above it)
+  [0.0, -0.45, 0.15],   // 5: SKILLS (Below Node 5)
   [-0.20, -0.44, 0.15], // 6: EDUCATION (Below-Left of Node 6)
   [-0.25, 0.40, 0.15],  // 7: CERTIFICATE (Above-Left of Node 7)
   [0.0, 0.45, 0.15],    // 8: CONTACT (Above Node 8)
 ];
+
+const TABLET_TAG_OFFSETS: [number, number, number][] = [
+  [0.0, -0.34, 0.15],   // 0: MULLO (Below Node 0)
+  [0.0, 0.38, 0.15],    // 1: ABOUT ME
+  [0.0, 0.38, 0.15],    // 2: ORGANIZATIONAL
+  [0.18, 0.36, 0.15],   // 3: PROFESSIONAL (Outward right)
+  [0.10, -0.36, 0.15],  // 4: PROJECTS
+  [0.0, -0.36, 0.15],   // 5: SKILLS
+  [-0.10, -0.36, 0.15], // 6: EDUCATION
+  [-0.18, 0.36, 0.15],  // 7: CERTIFICATE (Outward left)
+  [0.0, 0.38, 0.15],    // 8: CONTACT
+];
+
+const MOBILE_TAG_OFFSETS: [number, number, number][] = [
+  [0.0, -0.32, 0.15],   // 0: MULLO (Below Node 0)
+  [0.0, 0.34, 0.15],    // 1: ABOUT ME
+  [0.0, 0.34, 0.15],    // 2: ORGANIZATIONAL
+  [0.10, 0.32, 0.15],   // 3: PROFESSIONAL (Outward right)
+  [0.0, -0.32, 0.15],   // 4: PROJECTS
+  [0.0, -0.32, 0.15],   // 5: SKILLS
+  [0.0, -0.32, 0.15],   // 6: EDUCATION
+  [-0.10, 0.32, 0.15],  // 7: CERTIFICATE (Outward left)
+  [0.0, 0.34, 0.15],    // 8: CONTACT
+];
+
+const TAG_OFFSETS = DESKTOP_TAG_OFFSETS;
 
 const SATELLITE_LABELS = [
   'GLSL', 'SHADERS', 'WEBGL', 'ALGORITHMS', 'R3F', 'AUDIO FFT', 'BLENDER', 'SYSTEMS', 'OPTIMIZE'
@@ -342,6 +432,13 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
     const cam = state.camera;
     const aspect = state.viewport.aspect;
 
+    // Detect device tier dynamically based on viewport aspect and window width
+    const isMobile = aspect < 0.62 || (typeof window !== 'undefined' && window.innerWidth < 640);
+    const isTablet = !isMobile && (aspect < 1.15 || (typeof window !== 'undefined' && window.innerWidth <= 1024));
+
+    const activeAnchors = isMobile ? MOBILE_ANCHORS : isTablet ? TABLET_ANCHORS : DESKTOP_ANCHORS;
+    const activeTagOffsets = isMobile ? MOBILE_TAG_OFFSETS : isTablet ? TABLET_TAG_OFFSETS : DESKTOP_TAG_OFFSETS;
+
     // ── 1. Update Group Rotation & World Matrix FIRST so all node transforms follow rotation ──
     if (groupRef.current) {
       if (activeStep === 0) {
@@ -402,6 +499,12 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
       const n = neurons[i];
       const isActiveNode = n.storyIndex === currentActiveStoryIdx;
 
+      // Update zoneCenter dynamically to match responsive device layout
+      const targetAnchor = activeAnchors[i] || activeAnchors[0];
+      n.zoneCenter.x += (targetAnchor[0] - n.zoneCenter.x) * 0.08;
+      n.zoneCenter.y += (targetAnchor[1] - n.zoneCenter.y) * 0.08;
+      n.zoneCenter.z += (targetAnchor[2] - n.zoneCenter.z) * 0.08;
+
       let targetX = n.zoneCenter.x;
       let targetY = n.zoneCenter.y;
       let targetZ = n.zoneCenter.z;
@@ -409,7 +512,7 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
       if (isActiveNode) {
         // ── In Active Detail Section: Shift neuron point lower (-Y) for spacious composition ──
         targetX = n.zoneCenter.x;
-        targetY = n.zoneCenter.y - 0.22;
+        targetY = n.zoneCenter.y - (isMobile ? 0.15 : 0.22);
         targetZ = n.zoneCenter.z;
       } else {
         // ── In Overview / Inactive: Subtle Harmonic Oscillation & Cursor Pull ──
@@ -417,14 +520,14 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
         const exactMouseWorldX = (mouse.x * state.viewport.width * (rayZDist / cam.position.z)) / 2;
         const exactMouseWorldY = (mouse.y * state.viewport.height * (rayZDist / cam.position.z)) / 2;
 
-        const localOffsetX = Math.sin(t * 0.7 * n.pulseSpeed + n.phase) * 0.12;
-        const localOffsetY = Math.cos(t * 0.6 * n.pulseSpeed + n.phase * 1.2) * 0.12;
-        const localOffsetZ = Math.sin(t * 0.5 * n.pulseSpeed + n.phase * 0.8) * 0.08;
+        const localOffsetX = Math.sin(t * 0.7 * n.pulseSpeed + n.phase) * (isMobile ? 0.06 : 0.12);
+        const localOffsetY = Math.cos(t * 0.6 * n.pulseSpeed + n.phase * 1.2) * (isMobile ? 0.06 : 0.12);
+        const localOffsetZ = Math.sin(t * 0.5 * n.pulseSpeed + n.phase * 0.8) * (isMobile ? 0.04 : 0.08);
 
         const dxToMouse = exactMouseWorldX - n.zoneCenter.x;
         const dyToMouse = exactMouseWorldY - n.zoneCenter.y;
         const dist2D = Math.sqrt(dxToMouse * dxToMouse + dyToMouse * dyToMouse);
-        const pullFactor = isDraggingNow ? 0 : Math.max(0, 1 - dist2D / 3.0) * 0.25;
+        const pullFactor = isDraggingNow ? 0 : Math.max(0, 1 - dist2D / 3.0) * (isMobile ? 0.12 : 0.25);
 
         const fullTargetX = n.zoneCenter.x + localOffsetX + (dxToMouse * pullFactor);
         const fullTargetY = n.zoneCenter.y + localOffsetY + (dyToMouse * pullFactor);
@@ -457,7 +560,7 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
 
         // Check if node is in front of camera frustum
         const isFacingCamera = projectedVec.z < 1.0;
-        const hitRadius = n.isMain ? 0.095 : 0.075;
+        const hitRadius = isMobile ? (n.isMain ? 0.13 : 0.09) : isTablet ? (n.isMain ? 0.11 : 0.08) : (n.isMain ? 0.095 : 0.075);
         const isHovered = isFacingCamera && screenDistance < hitRadius && bloomEase > 0.7;
 
         // Signal hover state to parent for drag conflict avoidance & click detection
@@ -466,13 +569,14 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
           hoveredStoryIdx = n.storyIndex;
         }
 
-        // Tailored scale: Refined compact size (0.38) in detail mode
+        // Tailored scale: Refined compact size in detail mode
         const targetHoverScale = isActiveNode ? 1.30 : isHovered ? 1.25 : 1.0;
         n.currentHoverScale = THREE.MathUtils.lerp(n.currentHoverScale, targetHoverScale, 0.15);
 
-        // Dynamic pulse
+        // Dynamic pulse & responsive node base radius
         const pulse = 1 + Math.sin(t * n.pulseSpeed * (isActiveNode ? 2.0 : 1.8) + n.phase) * (isActiveNode ? 0.06 : 0.05);
-        const nodeBaseRadius = isActiveNode ? 0.38 : n.radius;
+        const baseRadius = isMobile ? (n.isMain ? 0.22 : 0.14) : isTablet ? (n.isMain ? 0.26 : 0.16) : n.radius;
+        const nodeBaseRadius = isActiveNode ? (isMobile ? 0.32 : 0.38) : baseRadius;
         const s = nodeBaseRadius * pulse * (isActiveNode ? 1.0 : n.currentHoverScale) * bloomEase;
 
         if (mesh) {
@@ -495,24 +599,28 @@ export const NeuronNetwork: React.FC<NeuronNetworkProps> = ({ activeStep, mouseR
             spriteMat.opacity = THREE.MathUtils.lerp(spriteMat.opacity, targetOpacity, 0.12);
           }
 
-          // Adaptive Tag Scale:
-          // In Overview (camera at Z=5.2): 1.36 x 0.34
-          // In Detail Mode (camera close-up at Z=2.5): 0.68 x 0.17 for active node, 0.38 x 0.095 for background
+          // Adaptive Tag Scale per device tier:
+          // Desktop: 1.36 x 0.34
+          // Tablet: 1.08 x 0.27
+          // Mobile: 0.82 x 0.205
+          const baseTagWidth = isMobile ? 0.82 : isTablet ? 1.08 : 1.36;
+          const baseTagHeight = isMobile ? 0.205 : isTablet ? 0.27 : 0.34;
+
           const tagScaleFactor = activeStep === 0
             ? (isHovered ? 1.08 : 1.0)
-            : (isActiveNode ? 0.52 : 0.28);
+            : (isActiveNode ? (isMobile ? 0.46 : 0.52) : (isMobile ? 0.22 : 0.28));
 
-          const targetWidth = 1.36 * tagScaleFactor;
-          const targetHeight = 0.34 * tagScaleFactor;
+          const targetWidth = baseTagWidth * tagScaleFactor;
+          const targetHeight = baseTagHeight * tagScaleFactor;
 
           sprite.scale.x = THREE.MathUtils.lerp(sprite.scale.x, targetWidth, 0.12);
           sprite.scale.y = THREE.MathUtils.lerp(sprite.scale.y, targetHeight, 0.12);
           sprite.scale.z = 1;
 
-          // Adaptive Tag Position Offset in Detail Mode (Generous vertical space above neuron):
-          const baseOffset = TAG_OFFSETS[n.storyIndex] || [0, n.radius + 0.38, 0.15];
+          // Adaptive Tag Position Offset in Detail Mode:
+          const baseOffset = (activeTagOffsets[n.storyIndex] as [number, number, number] | undefined) || [0, nodeBaseRadius + (isMobile ? 0.28 : isTablet ? 0.34 : 0.38), 0.15];
           const targetOffsetX = activeStep === 0 ? baseOffset[0] : (isActiveNode ? 0.0 : baseOffset[0] * 0.45);
-          const targetOffsetY = activeStep === 0 ? baseOffset[1] : (isActiveNode ? 0.86 : baseOffset[1] * 0.45);
+          const targetOffsetY = activeStep === 0 ? baseOffset[1] : (isActiveNode ? (isMobile ? 0.68 : 0.86) : baseOffset[1] * 0.45);
           const targetOffsetZ = baseOffset[2];
 
           sprite.position.x = THREE.MathUtils.lerp(sprite.position.x, targetOffsetX, 0.12);
